@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Elisa Kotiakku määritys",
+        "description": "Rajapinnan määritys",
+        "data": {
+          "name": "Laitteen nimi",
+          "url": "Rajapinnan URL",
+          "api_key": "API-avain",
+          "scan_interval": "Päivitysväli (sekuntia)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Yhteys palvelimeen epäonnistui. Tarkista URL",
+      "invalid_auth": "Virheellinen API-avain",
+      "unknown": "Tuntematon virhe tapahtui"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_power_kw": { "name": "Akun teho" },
+      "battery_temperature_c": { "name": "Akun lämpötila" },
+      "state_of_charge_percent": { "name": "Akun varaustila" },
+      "solar_power_kw": { "name": "Aurinkopaneelien teho" },
+      "grid_power_kw": { "name": "Verkon teho" },
+      "house_power_kw": { "name": "Kiinteistön kulutus" },
+      "solar_to_house_kw": { "name": "Aurinkopaneeleilta kiinteistölle" },
+      "solar_to_battery_kw": { "name": "Aurinkopaneeleilta akkuun" },
+      "solar_to_grid_kw": { "name": "Aurinkopaneeleilta verkkoon" },
+      "grid_to_house_kw": { "name": "Verkosta kiinteistölle" },
+      "grid_to_battery_kw": { "name": "Verkosta akkuun" },
+      "battery_to_house_kw": { "name": "Akusta kiinteistölle" },
+      "battery_to_grid_kw": { "name": "Akusta verkkoon" },
+      "battery_energy_kwh": { "name": "Akusta otettu kokonaisenergia" },
+      "solar_energy_kwh": { "name": "Aurinkopaneelien kokonaistuotto" },
+      "grid_energy_kwh": { "name": "Verkosta ostettu kokonaisenergia" },
+      "house_energy_kwh": { "name": "Talon kokonaiskulutus" },
+      "solar_to_house_kwh": { "name": "Aurinkopaneeleilta kiinteistölle" },
+      "solar_to_battery_kwh": { "name": "Aurinkopaneeleilta akkuun" },
+      "solar_to_grid_kwh": { "name": "Aurinkopaneeleilta verkkoon" },
+      "grid_to_house_kwh": { "name": "Verkosta kiinteistölle" },
+      "grid_to_battery_kwh": { "name": "Verkosta akkuun" },
+      "battery_to_house_kwh": { "name": "Akusta kiinteistölle" },
+      "battery_to_grid_kwh": { "name": "Akusta verkkoon" },
+      "total_battery_charge_kwh": { "name": "Akun kokonaislataus" },
+      "total_grid_export_kwh": { "name": "Verkkoon myyty kokonaisenergia" },
+      "spot_price_cents_per_kwh": { "name": "Pörssisähkön hinta" }
+    }
+  }
+}

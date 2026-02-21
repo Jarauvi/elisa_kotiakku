@@ -1,0 +1,12 @@
+{
+  "domain": "elisa_kotiakku",
+  "name": "Elisa Kotiakku",
+  "codeowners": ["@Jarauvi"],
+  "config_flow": true,
+  "documentation": "https://github.com/Jarauvi/elisa_kotiakku/tree/main",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Jarauvi/elisa_kotiakku/issues",
+  "loggers": ["custom_components.elisa_kotiakku"],
+  "requirements": [],
+  "version": "0.0.1"
+}

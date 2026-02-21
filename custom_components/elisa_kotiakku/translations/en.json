@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Elisa Kotiakku Configuration",
+        "description": "API Configuration",
+        "data": {
+          "name": "Device Name",
+          "url": "API URL",
+          "api_key": "API Key",
+          "scan_interval": "Update Interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the server. Check the URL",
+      "invalid_auth": "Invalid API Key",
+      "unknown": "An unknown error occurred"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery_power_kw": { "name": "Battery power" },
+      "battery_temperature_c": { "name": "Battery temperature" },
+      "state_of_charge_percent": { "name": "State of charge" },
+      "solar_power_kw": { "name": "Solar power" },
+      "grid_power_kw": { "name": "Grid power" },
+      "house_power_kw": { "name": "House power consumption" },
+      "solar_to_house_kw": { "name": "Solar power to house" },
+      "solar_to_battery_kw": { "name": "Solar power to battery" },
+      "solar_to_grid_kw": { "name": "Solar power to grid" },
+      "grid_to_house_kw": { "name": "Grid power to house" },
+      "grid_to_battery_kw": { "name": "Grid power to battery" },
+      "battery_to_house_kw": { "name": "Battery power to house" },
+      "battery_to_grid_kw": { "name": "Battery power to grid" },
+      "battery_energy_kwh": { "name": "Battery total energy" },
+      "solar_energy_kwh": { "name": "Solar total energy production" },
+      "grid_energy_kwh": { "name": "Grid total energy" },
+      "house_energy_kwh": { "name": "House energy consumption" },
+      "solar_to_house_kwh": { "name": "Solar energy to house" },
+      "solar_to_battery_kwh": { "name": "Solar energy to battery" },
+      "solar_to_grid_kwh": { "name": "Solar energy to grid" },
+      "grid_to_house_kwh": { "name": "Grid energy to house" },
+      "grid_to_battery_kwh": { "name": "Grid energy to battery" },
+      "battery_to_house_kwh": { "name": "Battery energy to house" },
+      "battery_to_grid_kwh": { "name": "Battery energy to grid" },
+      "total_battery_charge_kwh": { "name": "Total battery charge" },
+      "total_grid_export_kwh": { "name": "Total grid export" },
+      "spot_price_cents_per_kwh": { "name": "Spot price" }
+    }
+  }
+}
