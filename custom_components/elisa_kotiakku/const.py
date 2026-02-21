@@ -1,8 +1,15 @@
 """Constants for the Elisa Kotiakku integration."""
+from homeassistant.const import Platform
 
 # The unique domain identifier for this integration
 # This matches the folder name and is used throughout the code to group entities and data
 DOMAIN = "elisa_kotiakku"
+
+# This list tells Home Assistant which files (sensor.py, binary_sensor.py, etc.)
+# to load during setup and dismantle during unload.
+PLATFORMS: list[Platform] = [
+    Platform.SENSOR,
+]
 
 # Configuration keys used in the ConfigFlow (Step 1 setup)
 # These keys match the 'data' keys in your config_flow.py and strings.json
