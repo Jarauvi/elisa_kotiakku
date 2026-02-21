@@ -1,4 +1,4 @@
-# Elisa Kotiakku for Home Assistant
+# WIP: Elisa Kotiakku for Home Assistant
 
 <div align="left">
     <img alt="Home Assistant" src="https://img.shields.io/badge/home%20assistant-%2341BDF5.svg"/>
@@ -33,20 +33,20 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
     * **Device Name**: e.g., "Kotiakku"
     * **API URL**: Your private API endpoint.
     * **API Key**: Your secret key.
-    * **Update Interval**: Recommended 60 seconds.
+    * **Update Interval**: Minimum of 120 seconds.
 
 ## Energy Dashboard Setup
 
 To populate your Energy Dashboard, use these sensors:
 
 * **Electricity Grid**: 
-    * Consumption: `grid_to_house_energy_kwh`
-    * Return to Grid: `total_grid_export_energy_kwh`
+    * Consumption: `grid_energy_kwh`
+    * Return to Grid: `total_grid_export_kwh`
 * **Solar Production**: 
     * Solar Production: `solar_energy_kwh`
 * **Battery System**:
-    * Energy In: `total_battery_charge_energy_kwh`
-    * Energy Out: `battery_to_house_energy_kwh`
+    * Energy In: `total_battery_charge_kwh`
+    * Energy Out: `battery_energy_kwh`
 
 ---
 
