@@ -1,0 +1,11 @@
+rules:
+  - rule: config-flow
+    status: done
+  - rule: diagnostics
+    status: done
+  - rule: tests
+    status: done
+  - rule: translations
+    status: done
+  - rule: energy
+    status: done

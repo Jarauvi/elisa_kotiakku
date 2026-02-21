@@ -8,8 +8,10 @@ import asyncio
 from datetime import timedelta
 import aiohttp
 
+from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from .const import DOMAIN, CONF_API_KEY, CONF_URL, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import DOMAIN, PLATFORMS, CONF_API_KEY, CONF_URL, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
 
 # Define the logger for this integration using the module name
 _LOGGER = logging.getLogger(__name__)
@@ -70,6 +72,29 @@ async def async_setup_entry(hass, entry):
     entry.async_on_unload(entry.add_update_listener(update_listener))
 
     return True
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry.
+    
+    This is called when a user deletes the integration or disables it.
+    It ensures all sensors are removed and background tasks are killed.
+    """
+    # 1. Tell all platforms (sensor, etc.) to remove their entities
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+    # 2. If platforms unloaded successfully, clean up our local data
+    if unload_ok:
+        # This removes the coordinator from memory
+        coordinator = hass.data[DOMAIN].pop(entry.entry_id)
+        
+        # If your coordinator or API client has a close method, call it here:
+        # await coordinator.api.async_close_session()
+
+    # 3. If there are no more entries for this domain, remove the domain key
+    if not hass.data[DOMAIN]:
+        hass.data.pop(DOMAIN)
+
+    return unload_ok
 
 async def update_listener(hass, entry):
     """

@@ -121,6 +121,7 @@ class KotiakkuSensor(CoordinatorEntity, SensorEntity):
     """
 
     _attr_has_entity_name = True  # Ensures 'name' comes from translation files
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(self, coordinator, key, device_name, device_slug, entry):
         """Initialize the base sensor with shared properties."""
@@ -137,7 +138,7 @@ class KotiakkuSensor(CoordinatorEntity, SensorEntity):
         
         # Link to translations and state tracking
         self._attr_translation_key = key
-        self._attr_state_class = SensorStateClass.MEASUREMENT
+        #self._attr_state_class = SensorStateClass.MEASUREMENT
         
         # Apply custom icon if defined in ICON_MAP
         if ICON_MAP.get(key) != None:
