@@ -2,9 +2,11 @@
 
 <div align="left">
     <img alt="Home Assistant" src="https://img.shields.io/badge/home%20assistant-%2341BDF5.svg"/>
+    <img alt="HACS" src="https://img.shields.io/badge/HACS-Custom-orange.svg"/>
     <img alt="Cloud polling" src="https://img.shields.io/badge/IOT_class-Cloud_polling-blue">
     <img alt="Static Badge" src="https://img.shields.io/badge/License-MIT-green">
     <img alt="Version" src="https://img.shields.io/github/manifest-json/v/Jarauvi/elisa_kotiakku?filename=custom_components%2Felisa_kotiakku%2Fmanifest.json&label=Version">
+    <img alt="Tests" src="https://github.com/Jarauvi/elisa_kotiakku/actions/workflows/tests.yaml/badge.svg"/>
 </div>
 
 > [!IMPORTANT]
