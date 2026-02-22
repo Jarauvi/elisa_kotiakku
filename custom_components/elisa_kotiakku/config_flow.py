@@ -14,7 +14,11 @@ from .const import (
     CONF_SCAN_INTERVAL, 
     DEFAULT_NAME, 
     DEFAULT_SCAN_INTERVAL, 
-    MIN_SCAN_INTERVAL
+    MIN_SCAN_INTERVAL,
+    CONF_POWER_UNIT,
+    DEFAULT_POWER_UNIT,
+    UNIT_W,
+    UNIT_KW
 )
 
 async def validate_input(hass, data):
@@ -65,6 +69,7 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_NAME, default=DEFAULT_NAME): str,
                 vol.Required(CONF_URL, default="http://127.0.0.1:8000/api/v1/status"): str,
                 vol.Required(CONF_API_KEY): str,
+                vol.Required(CONF_POWER_UNIT, default=DEFAULT_POWER_UNIT): vol.In([UNIT_W, UNIT_KW]),
                 vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
                     vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)
                 ),
@@ -95,11 +100,19 @@ class ElisaKotiakkuOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema({
                 vol.Optional(
+                    CONF_POWER_UNIT,
+                    default=self.config_entry.options.get(
+                        CONF_POWER_UNIT, 
+                        self.config_entry.data.get(CONF_POWER_UNIT, DEFAULT_POWER_UNIT)
+                    ),
+                ): vol.In([UNIT_W, UNIT_KW]),
+                vol.Optional(
                     CONF_SCAN_INTERVAL,
                     default=self.config_entry.options.get(
                         CONF_SCAN_INTERVAL, 
                         self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
                     ),
                 ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
+                vol.Optional(CONF_POWER_UNIT, default=DEFAULT_POWER_UNIT): vol.In([UNIT_W, UNIT_KW]),
             }),
         )

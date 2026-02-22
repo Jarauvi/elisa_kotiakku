@@ -14,7 +14,7 @@
 > 
 > For testing purposes, a **fastapi server** can be found in this repo: https://github.com/Jarauvi/kotiakku_test_server 🧪
 > 
-> This preliminary version assumes, that all the API data headers will be the same that can be exported from Kotiakku app 
+> This preliminary version assumes that all the API data headers will be the same as those exported from the Kotiakku app.
 
 This custom component integrates the **Elisa Kotiakku** energy storage system into Home Assistant. It provides real-time monitoring of solar production, battery status, house consumption, and grid exchange. ⚡
 
@@ -44,26 +44,31 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
     * **Device Name**: e.g., `Kotiakku` 🏠
     * **API URL**: Your private API endpoint. 🌐
     * **API Key**: Your secret key. 🔑
-    * **Update Interval**: Minimum of 120 seconds. ⏱️
+    * **Update Interval**: Polling frequency in seconds (Minimum **120s**). ⏱️
+    * **Power Unit**: Select preferred unit for real-time sensors (**kW** or **W**). 📐
+
+*These settings can be adjusted later by clicking **Configure** on the integration card.*
 
 ---
 
 ## 📊 Available Sensors
 
-### ⚡ Power Sensors (Current Flow in kW)
-| Entity ID | Name (FI) | Description |
+### ⚡ Power Sensors (Current Flow)
+*The unit (kW or W) and Entity ID suffix update based on your configuration.*
+
+| Entity ID (Example) | Name (FI) | Description |
 | :--- | :--- | :--- |
-| `battery_power_kw` | Akun teho | Current battery charge (+) or discharge (-) |
-| `solar_power_kw` | Aurinkopaneelien teho | Total current solar production |
-| `grid_power_kw` | Verkon teho | Total current grid exchange |
-| `house_power_kw` | Kiinteistön kulutus | Current total building consumption |
-| `solar_to_house_kw` | Aurinkopaneeleilta kiinteistölle | Solar power used directly by the house |
-| `solar_to_battery_kw` | Aurinkopaneeleilta akkuun | Solar power going into storage |
-| `solar_to_grid_kw` | Aurinkopaneeleilta verkkoon | Solar power being exported |
-| `grid_to_house_kw` | Verkosta kiinteistölle | Grid power used by the house |
-| `grid_to_battery_kw` | Verkosta akkuun | Grid power used to charge the battery |
-| `battery_to_house_kw` | Akusta kiinteistölle | Battery power used by the house |
-| `battery_to_grid_kw` | Akusta verkkoon | Battery power being exported |
+| `sensor.battery_power_kw` | Akun teho | Current battery charge (+) or discharge (-) |
+| `sensor.solar_power_kw` | Aurinkopaneelien teho | Total current solar production |
+| `sensor.grid_power_kw` | Verkon teho | Total current grid exchange |
+| `sensor.house_power_kw` | Kiinteistön kulutus | Current total building consumption |
+| `sensor.solar_to_house_kw` | Aurinkopaneeleilta kiinteistölle | Solar power used directly by the house |
+| `sensor.solar_to_battery_kw` | Aurinkopaneeleilta akkuun | Solar power going into storage |
+| `sensor.solar_to_grid_kw` | Aurinkopaneeleilta verkkoon | Solar power being exported |
+| `sensor.grid_to_house_kw` | Verkosta kiinteistölle | Grid power used by the house |
+| `sensor.grid_to_battery_kw` | Verkosta akkuun | Grid power used to charge the battery |
+| `sensor.battery_to_house_kw` | Akusta kiinteistölle | Battery power used by the house |
+| `sensor.battery_to_grid_kw` | Akusta verkkoon | Battery power being exported |
 
 ### 📈 Energy Sensors (Cumulative Totals in kWh)
 | Entity ID | Name (FI) | Description |
@@ -74,13 +79,6 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 | `total_grid_export_kwh` | Verkkoon myyty kokonaisenergia | Total energy exported to grid |
 | `total_battery_charge_kwh` | Akun kokonaislataus | Total energy put into the battery |
 | `battery_energy_kwh` | Akusta otettu kokonaisenergia | Total energy taken from the battery |
-| `solar_to_house_kwh` | Aurinkopaneeleilta kiinteistölle | Cumulative solar used by house |
-| `solar_to_battery_kwh` | Aurinkopaneeleilta akkuun | Cumulative solar stored in battery |
-| `solar_to_grid_kwh` | Aurinkopaneeleilta verkkoon | Cumulative solar exported |
-| `grid_to_house_kwh` | Verkosta kiinteistölle | Cumulative grid used by house |
-| `grid_to_battery_kwh` | Verkosta akkuun | Cumulative grid stored in battery |
-| `battery_to_house_kwh` | Akusta kiinteistölle | Cumulative battery used by house |
-| `battery_to_grid_kwh` | Akusta verkkoon | Cumulative battery exported |
 
 ### 🌡️ Status & Market Data
 | Entity ID | Name (FI) | Description |

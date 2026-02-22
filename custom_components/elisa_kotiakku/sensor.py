@@ -15,7 +15,7 @@ from homeassistant.const import (
 )
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import slugify
-from .const import DOMAIN, MANUFACTURER, MODEL, CONF_NAME, DEFAULT_NAME
+from .const import DOMAIN, MANUFACTURER, MODEL, CONF_NAME, DEFAULT_NAME, CONF_POWER_UNIT, DEFAULT_POWER_UNIT, UNIT_W
 
 # Mapping of sensor keys to Material Design Icons (MDI)
 # If a key is not here or set to None, HA will fall back to DeviceClass defaults
@@ -133,9 +133,6 @@ class KotiakkuSensor(CoordinatorEntity, SensorEntity):
         # Unique ID prevents duplicate entities and allows UI renaming
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         
-        # Standardized entity_id (e.g., sensor.mybattery_solar_power_kw)
-        self.entity_id = f"sensor.{device_slug}_{key}"
-        
         # Link to translations and state tracking
         self._attr_translation_key = key
         #self._attr_state_class = SensorStateClass.MEASUREMENT
@@ -143,6 +140,19 @@ class KotiakkuSensor(CoordinatorEntity, SensorEntity):
         # Apply custom icon if defined in ICON_MAP
         if ICON_MAP.get(key) != None:
             self._attr_icon = ICON_MAP.get(key)
+
+        self._unit_pref = entry.options.get(
+            CONF_POWER_UNIT, 
+            entry.data.get(CONF_POWER_UNIT, DEFAULT_POWER_UNIT)
+        )
+
+        # Dynamic sensor naming for power sensors
+        display_key = key
+        if self._unit_pref == UNIT_W and key.endswith("_kw"):
+            display_key = key.replace("_kw", "_w")
+
+        self.entity_id = f"sensor.{device_slug}_{display_key}"
+        
 
     @property
     def device_info(self):
@@ -267,7 +277,22 @@ class KotiakkuSumEnergySensor(KotiakkuEnergySensor):
 class KotiakkuPowerSensor(KotiakkuSensor):
     """Sensor for Power (kW) measurements."""
     _attr_device_class = SensorDeviceClass.POWER
-    _attr_native_unit_of_measurement = UnitOfPower.KILO_WATT
+
+    @property
+    def native_unit_of_measurement(self):
+        """Return W or kW based on user preference."""
+        return UnitOfPower.WATT if self._unit_pref == UNIT_W else UnitOfPower.KILO_WATT
+
+    @property
+    def native_value(self):
+        """Return the value, converted to Watts if necessary."""
+        val = super().native_value
+        if val is None:
+            return None
+            
+        if self._unit_pref == UNIT_W:
+            return round(float(val) * 1000, 2)
+        return val
 
 class KotiakkuTemperatureSensor(KotiakkuSensor):
     """Sensor for Temperature (C) measurements."""

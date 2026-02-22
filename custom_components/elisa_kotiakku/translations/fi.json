@@ -8,6 +8,7 @@
           "name": "Laitteen nimi",
           "url": "Rajapinnan URL",
           "api_key": "API-avain",
+          "power_unit": "Tehon yksikkö",
           "scan_interval": "Päivitysväli (sekuntia)"
         }
       }

@@ -18,6 +18,12 @@ CONF_URL = "url"
 CONF_NAME = "name"
 CONF_SCAN_INTERVAL = "scan_interval"
 
+#These are for selecting the power unit (W or kW)
+CONF_POWER_UNIT = "power_unit"
+UNIT_W = "W"
+UNIT_KW = "kW"
+DEFAULT_POWER_UNIT = UNIT_KW
+
 # Hardware Metadata
 # These are displayed in the 'Device Info' panel in Home Assistant
 MANUFACTURER = "Huawei (Elisa)"

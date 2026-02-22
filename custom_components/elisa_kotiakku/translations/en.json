@@ -8,6 +8,7 @@
           "name": "Device Name",
           "url": "API URL",
           "api_key": "API Key",
+          "power_unit": "Tehon yksikkö",
           "scan_interval": "Update Interval (seconds)"
         }
       }
