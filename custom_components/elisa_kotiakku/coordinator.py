@@ -5,6 +5,7 @@ from datetime import timedelta
 import aiohttp
 
 from homeassistant.core import HomeAssistant
+
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .const import DOMAIN, CONF_API_KEY, CONF_URL, DEFAULT_SCAN_INTERVAL
@@ -40,7 +41,7 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
         
         try:
             # We use the hass-provided helper for aiohttp sessions
-            session = session = async_get_clientsession(self.hass)
+            session = async_get_clientsession(self.hass)
             
             async with session.get(self.api_url, headers=headers, timeout=10) as response:
                 if response.status == 401:

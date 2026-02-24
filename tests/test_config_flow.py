@@ -1,19 +1,35 @@
-"""Tests for Elisa Kotiakku config flow."""
+"""Tests for Elisa Kotiakku config flow.
+
+This module tests the setup, validation, and options flows for the 
+Elisa Kotiakku custom integration, ensuring users can configure 
+their battery devices correctly.
+"""
+
 from unittest.mock import patch
-import pytest
+from aioresponses import aioresponses
+
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
 
+from custom_components.elisa_kotiakku.config_flow import validate_input
 from custom_components.elisa_kotiakku.const import (
     DOMAIN, 
     CONF_POWER_UNIT, 
     UNIT_W, 
     UNIT_KW,
-    CONF_SCAN_INTERVAL
+    CONF_SCAN_INTERVAL,
+    CONF_API_KEY,
+    CONF_URL
 )
 
+# --- Config Flow Tests ---
+
 async def test_flow_user_init(hass: HomeAssistant):
-    """Test the initial user step form."""
+    """Test the initial user step form presentation.
+    
+    Verifies that the integration starts with the 'user' step when 
+    manually added via the UI.
+    """
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -21,11 +37,16 @@ async def test_flow_user_init(hass: HomeAssistant):
     assert result["step_id"] == "user"
 
 async def test_flow_user_success(hass: HomeAssistant):
-    """Test successful configuration flow."""
+    """Test successful configuration flow completion.
+    
+    Verifies that valid user input results in a successful entry creation
+    with the correct data and options preserved.
+    """
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
 
+    # Patch validation to simulate a successful connection check
     with patch(
         "custom_components.elisa_kotiakku.config_flow.validate_input",
         return_value=None,
@@ -36,7 +57,7 @@ async def test_flow_user_success(hass: HomeAssistant):
                 "name": "Test Battery",
                 "url": "http://127.0.0.1:8000/api/v1/status",
                 "api_key": "valid_key",
-                CONF_POWER_UNIT: UNIT_W,  # Added required field
+                CONF_POWER_UNIT: UNIT_W,
                 "scan_interval": 120,
             },
         )
@@ -47,7 +68,11 @@ async def test_flow_user_success(hass: HomeAssistant):
     assert result2["data"][CONF_POWER_UNIT] == UNIT_W
 
 async def test_flow_user_invalid_auth(hass: HomeAssistant):
-    """Test flow when API key is incorrect."""
+    """Test flow behavior when API key validation fails.
+    
+    Ensures that the user is returned to the form with the appropriate 
+    error message when authentication is rejected.
+    """
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
@@ -62,19 +87,25 @@ async def test_flow_user_invalid_auth(hass: HomeAssistant):
                 "name": "Test Battery",
                 "url": "http://127.0.0.1:8000/api/v1/status",
                 "api_key": "wrong_key",
-                CONF_POWER_UNIT: UNIT_KW, # Added required field
+                CONF_POWER_UNIT: UNIT_KW,
             },
         )
 
     assert result2["type"] == data_entry_flow.FlowResultType.FORM
     assert result2["errors"]["base"] == "invalid_auth"
 
+# --- Options Flow Tests ---
+
 async def test_options_flow_power_unit(hass: HomeAssistant, mock_config_entry):
-    """Test updating options flow."""
-    # 1. Add to hass
+    """Test updating integration options after setup.
+    
+    Ensures that units and scan intervals can be modified via the 
+    Configure button in the UI.
+    """
+    # Register the mock entry in the system
     mock_config_entry.add_to_hass(hass)
 
-    # 2. Use 120 to satisfy the "value must be at least 120" rule
+    # Initial state: scan interval must meet minimum requirements (120s)
     hass.config_entries.async_update_entry(
         mock_config_entry,
         options={
@@ -83,10 +114,10 @@ async def test_options_flow_power_unit(hass: HomeAssistant, mock_config_entry):
         }
     )
 
-    # 3. Initialize the options flow
+    # Start the options flow
     result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
 
-    # 4. Submit the change (again, using 120)
+    # Submit the form with a change (from kW to W)
     result2 = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
@@ -95,8 +126,37 @@ async def test_options_flow_power_unit(hass: HomeAssistant, mock_config_entry):
         },
     )
 
-    # 5. Verify
     assert result2["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
     assert mock_config_entry.options.get(CONF_POWER_UNIT) == UNIT_W
     
     await hass.async_block_till_done()
+
+# --- Input Validation Tests ---
+
+async def test_validate_input_success(hass: HomeAssistant):
+    """Test the internal validate_input function with successful API response."""
+    data = {CONF_API_KEY: "valid_key", CONF_URL: "https://api.elisa.fi/battery"}
+    
+    with aioresponses() as mock:
+        mock.get(data[CONF_URL], status=200)
+        result = await validate_input(hass, data)
+        assert result is None
+
+async def test_validate_input_invalid_auth(hass: HomeAssistant):
+    """Test validation failure when receiving a 401 Unauthorized status."""
+    data = {CONF_API_KEY: "wrong_key", CONF_URL: "https://api.elisa.fi/battery"}
+    
+    with aioresponses() as mock:
+        mock.get(data[CONF_URL], status=401)
+        result = await validate_input(hass, data)
+        assert result == "invalid_auth"
+
+async def test_validate_input_cannot_connect(hass: HomeAssistant):
+    """Test validation failure when the server is unreachable or errors out."""
+    data = {CONF_API_KEY: "any_key", CONF_URL: "https://api.elisa.fi/battery"}
+    
+    with aioresponses() as mock:
+        # Simulate a generic server-side error (500)
+        mock.get(data[CONF_URL], status=500)
+        result = await validate_input(hass, data)
+        assert result == "cannot_connect"

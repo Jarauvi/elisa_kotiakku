@@ -1,48 +1,100 @@
+"""Tests for Elisa Kotiakku DataUpdateCoordinator.
+
+This module ensures that data fetching logic is robust, handling both
+successful API responses and various failure modes like authentication
+issues and network timeouts.
+"""
+
 import re
 import pytest
 from aioresponses import aioresponses
+
 from homeassistant.config_entries import ConfigEntryState
-from custom_components.elisa_kotiakku.const import DOMAIN
+from homeassistant.helpers.update_coordinator import UpdateFailed
+
+from custom_components.elisa_kotiakku.config_flow import validate_input
+from custom_components.elisa_kotiakku.coordinator import KotiakkuDataUpdateCoordinator
+from custom_components.elisa_kotiakku.const import DOMAIN, CONF_API_KEY, CONF_URL
+
+# --- Integration Level Coordinator Tests ---
 
 async def test_coordinator_update_success(hass, mock_config_entry):
-    """Test successful data update."""
+    """Test a successful data refresh cycle.
+    
+    Verifies that the coordinator correctly parses API JSON and stores 
+    it in the coordinator.data attribute.
+    """
     mock_config_entry.add_to_hass(hass)
     
     with aioresponses() as m:
-        # 1. Mock the API call that happens DURING setup
+        # Mock the API call that happens during async_setup_entry
         m.get(re.compile(r".*"), status=200, payload={"soc": 85, "battery_power_kw": 1.2})
 
-        # 2. Setup the entry and wait for it to finish
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
 
-        # 3. Verify it loaded correctly
         assert mock_config_entry.state is ConfigEntryState.LOADED
         
-        # 4. Check the data
         coordinator = hass.data[DOMAIN][mock_config_entry.entry_id]
         assert coordinator.data["soc"] == 85
 
-    # 5. Mandatory Cleanup to prevent "Unclosed client session"
+    # Cleanup to prevent lingering aiohttp sessions in tests
     await hass.config_entries.async_unload(mock_config_entry.entry_id)
     await hass.async_block_till_done()
 
-async def test_coordinator_update_auth_failure(hass, mock_config_entry):
-    """Test coordinator handles auth error."""
-    mock_config_entry.add_to_hass(hass)
+# --- Internal Method Unit Tests ---
+
+async def test_coordinator_auth_failure(hass, mock_config_entry):
+    """Test coordinator behavior when the API returns 401 Unauthorized.
+    
+    Ensures that Authentication errors are caught and re-raised as UpdateFailed
+    with a clear descriptive message.
+    """
+    coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
     
     with aioresponses() as m:
-        # Mock 401 response for the initial setup check
-        m.get(re.compile(r".*"), status=401, body="Invalid API Key")
+        m.get(mock_config_entry.data["url"], status=401)
+        
+        with pytest.raises(UpdateFailed, match="Authentication failed"):
+            await coordinator._async_update_data()
 
-        # Setup will now fail or trigger auth error logic
-        await hass.config_entries.async_setup(mock_config_entry.entry_id)
-        await hass.async_block_till_done()
+async def test_coordinator_network_error(hass, mock_config_entry):
+    """Test coordinator behavior during server-side errors (500).
+    
+    Verifies that generic network or server issues trigger the appropriate
+    communication error handling.
+    """
+    coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
+    
+    with aioresponses() as m:
+        m.get(mock_config_entry.data["url"], status=500)
+        
+        with pytest.raises(UpdateFailed, match="Error communicating with API"):
+            await coordinator._async_update_data()
 
-        # In HA, if setup fails due to auth, the state should reflect that
-        assert mock_config_entry.state is ConfigEntryState.SETUP_ERROR or \
-               not hass.data.get(DOMAIN)
+# --- Validation Logic Tests ---
 
-    # Cleanup
-    await hass.config_entries.async_unload(mock_config_entry.entry_id)
-    await hass.async_block_till_done()
+async def test_validate_input_success(hass):
+    """Test that valid configuration input passes the connection check."""
+    data = {CONF_API_KEY: "valid_key", CONF_URL: "https://api.elisa.fi/battery"}
+    with aioresponses() as mock:
+        mock.get(data[CONF_URL], status=200)
+        result = await validate_input(hass, data)
+        assert result is None
+
+async def test_validate_input_invalid_auth(hass):
+    """Test that validate_input identifies incorrect credentials."""
+    data = {CONF_API_KEY: "wrong_key", CONF_URL: "https://api.elisa.fi/battery"}
+    with aioresponses() as mock:
+        mock.get(data[CONF_URL], status=401)
+        result = await validate_input(hass, data)
+        assert result == "invalid_auth"
+
+async def test_validate_input_cannot_connect(hass):
+    """Test that validate_input handles server timeouts or generic errors."""
+    data = {CONF_API_KEY: "any_key", CONF_URL: "https://api.elisa.fi/battery"}
+    with aioresponses() as mock:
+        # 500 status triggers the 'cannot_connect' logic in config_flow.py
+        mock.get(data[CONF_URL], status=500)
+        result = await validate_input(hass, data)
+        assert result == "cannot_connect"

@@ -73,19 +73,19 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 ### 📈 Energy Sensors (Cumulative Totals in kWh)
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
-| `house_energy_kwh` | Talon kokonaiskulutus | Total energy consumed by the property |
-| `solar_energy_kwh` | Aurinkopaneelien kokonaistuotto | Total energy produced by panels |
-| `grid_energy_kwh` | Verkosta ostettu kokonaisenergia | Total energy imported from grid |
-| `total_grid_export_kwh` | Verkkoon myyty kokonaisenergia | Total energy exported to grid |
-| `total_battery_charge_kwh` | Akun kokonaislataus | Total energy put into the battery |
-| `battery_energy_kwh` | Akusta otettu kokonaisenergia | Total energy taken from the battery |
+| `sensor.house_energy_kwh` | Talon kokonaiskulutus | Total energy consumed by the property |
+| `sensor.solar_energy_kwh` | Aurinkopaneelien kokonaistuotto | Total energy produced by panels |
+| `sensor.grid_energy_kwh` | Verkosta ostettu kokonaisenergia | Total energy imported from grid |
+| `sensor.total_grid_export_kwh` | Verkkoon myyty kokonaisenergia | Total energy exported to grid |
+| `sensor.total_battery_charge_kwh` | Akun kokonaislataus | Total energy put into the battery |
+| `sensor.battery_energy_kwh` | Akusta otettu kokonaisenergia | Total energy taken from the battery |
 
 ### 🌡️ Status & Market Data
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
-| `state_of_charge_percent` | Akun varaustila | Battery charge level (0–100%) |
-| `battery_temperature_c` | Akun lämpötila | Internal battery temperature |
-| `spot_price_cents_per_kwh` | Pörssisähkön hinta | Current electricity spot price |
+| `sensor.state_of_charge_percent` | Akun varaustila | Battery charge level (0–100%) |
+| `sensor.battery_temperature_c` | Akun lämpötila | Internal battery temperature |
+| `sensor.spot_price_cents_per_kwh` | Pörssisähkön hinta | Current electricity spot price |
 
 ---
 
