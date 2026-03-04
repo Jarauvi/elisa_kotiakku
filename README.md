@@ -10,6 +10,7 @@
 </div>
 
 > [!IMPORTANT]
+> **AS OF 4.3. INTEGRATION NEEDS FINETUNING BEFORE WORKING WITH OFFICIAL API, PLEASE WAIT FOR THE FIRST FUNCTIONING RELEASE BEFORE CONNECTING**
 > **Note:** This is a **work-in-progress** integration, yet without a functional official API.
 > 
 > For testing purposes, a **fastapi server** can be found in this repo: https://github.com/Jarauvi/kotiakku_test_server 🧪
