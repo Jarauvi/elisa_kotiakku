@@ -105,7 +105,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         ),
 
         # Specialized Sensors - Binary, Temperature, and Percentages
-        KotiakkuTemperatureSensor(coordinator, "battery_temperature_c", device_id, device_slug, entry),
+        KotiakkuTemperatureSensor(coordinator, "battery_temperature_celsius", device_id, device_slug, entry),
         KotiakkuBatterySensor(coordinator, "state_of_charge_percent", device_id, device_slug, entry),
         KotiakkuPriceSensor(coordinator, "spot_price_cents_per_kwh", device_id, device_slug, entry),
     ]
@@ -122,6 +122,7 @@ class KotiakkuSensor(CoordinatorEntity, SensorEntity):
 
     _attr_has_entity_name = True  # Ensures 'name' comes from translation files
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_suggested_display_precision = 3
 
     def __init__(self, coordinator, key, device_name, device_slug, entry):
         """Initialize the base sensor with shared properties."""
@@ -186,19 +187,27 @@ class KotiakkuEnergySensor(KotiakkuSensor, RestoreEntity):
         """Initialize energy sensor with a reference to its source power key."""
         super().__init__(coordinator, key, device_id, device_slug, entry)
         self._power_key = power_key
-        self._state = 0.0
+        self._state = None
         self._last_run = None
+        self._restored = False
 
     async def async_added_to_hass(self):
         """Called when entity is added to HA. Restores previous state from database."""
         await super().async_added_to_hass()
         state = await self.async_get_last_state()
-        if state:
+        if state is not None and state.state not in ("unknown", "unavailable"):
             try:
                 self._state = float(state.state)
             except ValueError:
                 self._state = 0.0
+        else:
+            self._state = 0.0
     
+        if self._state is not None:
+            self._restored = True
+            self._last_run = dt_util.utcnow()
+            self.async_write_ha_state()
+
     @property
     def native_value(self):
         """Calculate and return the cumulative energy total.
@@ -206,31 +215,41 @@ class KotiakkuEnergySensor(KotiakkuSensor, RestoreEntity):
         Uses the time difference between the current update and the last update
         to add (Power * Time) to the total state.
         """
+
+        if not self._restored:
+            return None
+
         # Get the timestamp of the last successful API update
-        now = self.coordinator.last_update_success or dt_util.utcnow()
+        now = dt_util.utcnow()
 
         if self.coordinator.data is None:
-            return round(self._state, 4)
+            return round(self._state, 3) if self._state is not None else 0.0
 
         power = self.coordinator.data.get(self._power_key)
         
         if power is None:
-            return round(self._state, 4)
+            return round(self._state, 3)
+        
+        power_val = abs(float(power))
+
+        if isinstance(self._last_run, int):
+            self._last_run = None
 
         # Initial run sets the timestamp without adding energy
         if self._last_run is None:
             self._last_run = now
-            return round(self._state, 4)
+            return round(self._state, 3)
 
         # Calculate time delta in hours (for kWh)
         diff = (now - self._last_run).total_seconds() / 3600
         
-        # Accumulate energy if time has elapsed
         if diff > 0:
-            self._state += float(power) * diff
+            new_state = (self._state or 0.0) + (power_val * diff)
+            if self._state is None or new_state > self._state:
+                self._state = new_state
             self._last_run = now
             
-        return round(self._state, 4)
+        return round(self._state, 3)
 
 class KotiakkuSumEnergySensor(KotiakkuEnergySensor):
     """Calculates Energy (kWh) by summing multiple power sources.
@@ -239,36 +258,28 @@ class KotiakkuSumEnergySensor(KotiakkuEnergySensor):
     to a single energy total.
     """
 
-    def __init__(self, coordinator, key, power_keys, device_id, device_slug, entry):
+    def __init__(self, coordinator, key, energy_keys, device_id, device_slug, entry):
         """Initialize with a list of power keys to be summed."""
         # Initialize parent with the first key in the list as a placeholder
-        super().__init__(coordinator, key, power_keys[0], device_id, device_slug, entry)
-        self._power_keys = power_keys 
+        super().__init__(coordinator, key, energy_keys[0], device_id, device_slug, entry)
+        self._energy_keys = energy_keys 
 
     @property
     def native_value(self):
         """Sum all configured power sources and integrate over time."""
-        now = self.coordinator.last_update_success or dt_util.utcnow()
 
         if self.coordinator.data is None:
-            return round(self._state, 4)
+            return round(self._state, 3)
 
-        # Sum values from all source keys, defaulting to 0 if missing
-        total_power = sum(
-            float(self.coordinator.data.get(k, 0) or 0) for k in self._power_keys
-        )
+        current_sum = 0.0
+        for k in self._energy_keys:
+            val = self.coordinator.data.get(k)
+            if val is not None:
+                current_sum += float(val)
 
-        if self._last_run is None:
-            self._last_run = now
-            return round(self._state, 4)
+        self._state = current_sum
 
-        diff = (now - self._last_run).total_seconds() / 3600
-        
-        if diff > 0:
-            self._state += total_power * diff
-            self._last_run = now
-            
-        return round(self._state, 4)
+        return round(self._state, 3)
 
 # --- Subclasses for Specific Measurement Types ---
 # These define the 'Device Class' which tells HA how to display the sensor
@@ -291,19 +302,28 @@ class KotiakkuPowerSensor(KotiakkuSensor):
             return None
             
         if self._unit_pref == UNIT_W:
-            return round(float(val) * 1000, 2)
-        return val
+            return round(float(val) * 1000, 3)
+        return round(val, 3)
 
 class KotiakkuTemperatureSensor(KotiakkuSensor):
     """Sensor for Temperature (C) measurements."""
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
+    _attr_suggested_display_precision = 1
 
 class KotiakkuBatterySensor(KotiakkuSensor):
     """Sensor for Battery State of Charge (%)."""
     _attr_device_class = SensorDeviceClass.BATTERY
     _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_suggested_display_precision = 0
 
 class KotiakkuPriceSensor(KotiakkuSensor):
     """Sensor for Electricity Spot Price."""
     _attr_native_unit_of_measurement = "c/kWh"
+
+    @property
+    def native_value(self):
+        val = super().native_value
+        if val is None:
+            return None
+        return round(float(val), 3)

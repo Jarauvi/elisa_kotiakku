@@ -22,7 +22,7 @@
   "entity": {
     "sensor": {
       "battery_power_kw": { "name": "Battery power" },
-      "battery_temperature_c": { "name": "Battery temperature" },
+      "battery_temperature_celsius": { "name": "Battery temperature" },
       "state_of_charge_percent": { "name": "State of charge" },
       "solar_power_kw": { "name": "Solar power" },
       "grid_power_kw": { "name": "Grid power" },

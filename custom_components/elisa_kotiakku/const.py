@@ -36,4 +36,4 @@ DEFAULT_NAME = "Kotiakku"
 # DEFAULT_SCAN_INTERVAL: The default polling rate if the user doesn't specify one (5 minutes)
 # MIN_SCAN_INTERVAL: The safety floor to prevent overwhelming the Elisa API/Huawei cloud
 DEFAULT_SCAN_INTERVAL = 300
-MIN_SCAN_INTERVAL = 120
+MIN_SCAN_INTERVAL = 300

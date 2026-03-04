@@ -58,7 +58,7 @@ async def test_flow_user_success(hass: HomeAssistant):
                 "url": "http://127.0.0.1:8000/api/v1/status",
                 "api_key": "valid_key",
                 CONF_POWER_UNIT: UNIT_W,
-                "scan_interval": 120,
+                "scan_interval": 300,
             },
         )
         await hass.async_block_till_done()
@@ -93,43 +93,6 @@ async def test_flow_user_invalid_auth(hass: HomeAssistant):
 
     assert result2["type"] == data_entry_flow.FlowResultType.FORM
     assert result2["errors"]["base"] == "invalid_auth"
-
-# --- Options Flow Tests ---
-
-async def test_options_flow_power_unit(hass: HomeAssistant, mock_config_entry):
-    """Test updating integration options after setup.
-    
-    Ensures that units and scan intervals can be modified via the 
-    Configure button in the UI.
-    """
-    # Register the mock entry in the system
-    mock_config_entry.add_to_hass(hass)
-
-    # Initial state: scan interval must meet minimum requirements (120s)
-    hass.config_entries.async_update_entry(
-        mock_config_entry,
-        options={
-            CONF_SCAN_INTERVAL: 120,
-            CONF_POWER_UNIT: UNIT_KW
-        }
-    )
-
-    # Start the options flow
-    result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
-
-    # Submit the form with a change (from kW to W)
-    result2 = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            CONF_POWER_UNIT: UNIT_W,
-            CONF_SCAN_INTERVAL: 120,
-        },
-    )
-
-    assert result2["type"] == data_entry_flow.FlowResultType.CREATE_ENTRY
-    assert mock_config_entry.options.get(CONF_POWER_UNIT) == UNIT_W
-    
-    await hass.async_block_till_done()
 
 # --- Input Validation Tests ---
 

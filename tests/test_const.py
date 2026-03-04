@@ -15,9 +15,9 @@ def test_scan_intervals():
     # Ensure the default isn't faster than the minimum
     assert const.DEFAULT_SCAN_INTERVAL >= const.MIN_SCAN_INTERVAL
     
-    # Safety check: Ensure the minimum interval is at least 2 minutes (120s)
+    # Safety check: Ensure the minimum interval is at least 5 minutes (300s)
     # This prevents accidental API hammering during development.
-    assert const.MIN_SCAN_INTERVAL >= 120
+    assert const.MIN_SCAN_INTERVAL >= 300
 
 def test_config_keys():
     """Verify configuration keys are correctly named."""

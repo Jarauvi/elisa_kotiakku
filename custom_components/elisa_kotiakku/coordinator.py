@@ -37,7 +37,10 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
         This is the core method that HA calls automatically based on 
         the update_interval.
         """
-        headers = {"X-API-KEY": self.api_key}
+        headers = {
+            "x-api-key": self.api_key,
+            "accept": "application/json"
+        }
         
         try:
             # We use the hass-provided helper for aiohttp sessions
@@ -52,6 +55,11 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 
                 _LOGGER.debug("Kotiakku data received: %s", data)
                 
+                if isinstance(data, list):
+                    if len(data) > 0:
+                        return data[0]
+                    raise UpdateFailed("API returned an empty list")
+
                 return data
 
         except Exception as err:

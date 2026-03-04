@@ -90,13 +90,14 @@ async def test_power_sensor_watt_conversion(hass, mock_coordinator, mock_config_
     assert sensor.native_value == 1500.0
     assert sensor.entity_id == "sensor.test_solar_power_w"
 
-async def test_energy_sensor_riemann_sum_calculation(hass, mock_coordinator, mock_config_entry):
+async def test_energy_sensor_riemann_sum_calculation(hass, mock_coordinator, mock_config_entry, freezer):
     """Test that the Energy sensor correctly integrates Power over time.
     
     Verifies the Riemann sum: Energy = Power * Time. 
     A 10kW load for 1 hour should result in 10kWh.
     """
     now = dt_util.utcnow()
+    freezer.move_to(now)
     mock_coordinator.last_update_success = now
     mock_coordinator.data = {"solar_power_kw": 10.0}
     
@@ -105,9 +106,14 @@ async def test_energy_sensor_riemann_sum_calculation(hass, mock_coordinator, moc
         "Test", "test", mock_config_entry
     )
 
+    sensor._restored = True
+    sensor._state = 0.0
+
     assert sensor.native_value == 0.0
 
     # Simulate 1 hour passing
+    future_time = now + timedelta(hours=1)
+    freezer.move_to(future_time)
     future_time = now + timedelta(hours=1)
     mock_coordinator.last_update_success = future_time
     assert sensor.native_value == 10.0
@@ -150,8 +156,9 @@ async def test_energy_sensor_native_value_none_data(hass, mock_config_entry):
     )
     
     sensor._state = 12.345678
+    sensor._restored = True
     # native_value should return the rounded internal _state
-    assert sensor.native_value == 12.3457
+    assert sensor.native_value == 12.346
 
 async def test_energy_sensor_calculation(hass, mock_config_entry, freezer):
     """Test that energy increments correctly based on power and time passage.
@@ -175,6 +182,7 @@ async def test_energy_sensor_calculation(hass, mock_config_entry, freezer):
         power_key="battery_power"
     )
     sensor._state = 10.0
+    sensor._restored = True
     sensor._last_run = now
 
     # Advance time by 0.5 hours
@@ -207,6 +215,7 @@ async def test_energy_sensor_no_time_passed(hass, mock_config_entry):
     )
     
     sensor._state = 10.0
+    sensor._restored = True
     sensor._last_run = now 
     
     # diff will be 0, total should remain 10.0

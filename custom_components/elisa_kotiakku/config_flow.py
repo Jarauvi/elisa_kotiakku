@@ -1,10 +1,12 @@
 """Config flow for Elisa Kotiakku integration."""
 
+import logging
 import aiohttp
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+_LOGGER = logging.getLogger(__name__)
 
 from .const import (
     DOMAIN, 
@@ -22,20 +24,34 @@ from .const import (
 )
 
 async def validate_input(hass, data):
-    """Validate the user input allows us to connect.
-    
-    This function actually hits the API to see if the URL and Token are valid
-    before we allow the user to finish the setup.
-    """
     session = async_get_clientsession(hass)
-    headers = {"X-API-KEY": data[CONF_API_KEY]}
+    headers = {
+        "x-api-key": data[CONF_API_KEY],
+        "accept": "application/json"
+    }
     
     try:
         async with session.get(data[CONF_URL], headers=headers, timeout=10) as response:
+            # --- DEBUGGING SECTION ---
+            # We read the body regardless of status to see error messages
+            response_text = await response.text()
+            _LOGGER.debug("API Response Status: %s", response.status)
+            _LOGGER.debug("API Response Body: %s", response_text)
+            # -------------------------
+
             if response.status == 401:
                 return "invalid_auth"
+            
+            # If status is 4xx or 5xx, this raises an exception
             response.raise_for_status()
-    except Exception:
+
+    except aiohttp.ClientConnectorError as err:
+        # This catches DNS or "No route to host" errors
+        _LOGGER.error("Connection error: %s", err)
+        return "cannot_connect"
+    except Exception as err:
+        # This catches EVERYTHING else and prints the actual error to your log
+        _LOGGER.error("Validation failed: %s", err)
         return "cannot_connect"
     
     return None
@@ -67,7 +83,7 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema({
                 vol.Required(CONF_NAME, default=DEFAULT_NAME): str,
-                vol.Required(CONF_URL, default="http://127.0.0.1:8000/api/v1/status"): str,
+                vol.Required(CONF_URL, default="https://residential.gridle.com/api/public/measurements"): str,
                 vol.Required(CONF_API_KEY): str,
                 vol.Required(CONF_POWER_UNIT, default=DEFAULT_POWER_UNIT): vol.In([UNIT_W, UNIT_KW]),
                 vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
@@ -77,42 +93,3 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry):
-        """Link to Options Flow."""
-        return ElisaKotiakkuOptionsFlowHandler(config_entry)
-
-class ElisaKotiakkuOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options (settings updates)."""
-    
-    def __init__(self, config_entry):
-        """Initialize."""
-        pass
-        #self.config_entry = config_entry
-
-    async def async_step_init(self, user_input=None):
-        """Manage the options."""
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema({
-                vol.Optional(
-                    CONF_POWER_UNIT,
-                    default=self.config_entry.options.get(
-                        CONF_POWER_UNIT, 
-                        self.config_entry.data.get(CONF_POWER_UNIT, DEFAULT_POWER_UNIT)
-                    ),
-                ): vol.In([UNIT_W, UNIT_KW]),
-                vol.Optional(
-                    CONF_SCAN_INTERVAL,
-                    default=self.config_entry.options.get(
-                        CONF_SCAN_INTERVAL, 
-                        self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
-                    ),
-                ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
-                vol.Optional(CONF_POWER_UNIT, default=DEFAULT_POWER_UNIT): vol.In([UNIT_W, UNIT_KW]),
-            }),
-        )

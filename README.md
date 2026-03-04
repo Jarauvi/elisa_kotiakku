@@ -1,4 +1,4 @@
-# 🔋 WIP: Elisa Kotiakku for Home Assistant
+# 🔋 Elisa Kotiakku for Home Assistant
 
 <div align="left">
     <img alt="Home Assistant" src="https://img.shields.io/badge/home%20assistant-%2341BDF5.svg"/>
@@ -8,15 +8,6 @@
     <img alt="Version" src="https://img.shields.io/github/manifest-json/v/Jarauvi/elisa_kotiakku?filename=custom_components%2Felisa_kotiakku%2Fmanifest.json&label=Version">
     <img alt="Tests" src="https://github.com/Jarauvi/elisa_kotiakku/actions/workflows/tests.yaml/badge.svg"/>
 </div>
-
-> [!IMPORTANT]
-> **AS OF 4.3. INTEGRATION NEEDS FINETUNING BEFORE WORKING WITH OFFICIAL API, PLEASE WAIT FOR THE FIRST FUNCTIONING RELEASE BEFORE CONNECTING**
-> 
-> **Note:** This is a **work-in-progress** integration, yet without a functional official API.
-> 
-> For testing purposes, a **fastapi server** can be found in this repo: https://github.com/Jarauvi/kotiakku_test_server 🧪
-> 
-> This preliminary version assumes that all the API data headers will be the same as those exported from the Kotiakku app.
 
 This custom component integrates the **Elisa Kotiakku** energy storage system into Home Assistant. It provides real-time monitoring of solar production, battery status, house consumption, and grid exchange. ⚡
 
@@ -44,12 +35,10 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 2.  Click **Add Integration** ➕ and search for **Elisa Kotiakku**.
 3.  Fill in the following details:
     * **Device Name**: e.g., `Kotiakku` 🏠
-    * **API URL**: Your private API endpoint. 🌐
-    * **API Key**: Your secret key. 🔑
-    * **Update Interval**: Polling frequency in seconds (Minimum **120s**). ⏱️
+    * **API URL**: API endpoint (provided by default). 🌐
+    * **API Key**: Your API key (get from Kotiakku app). 🔑
+    * **Update Interval**: Polling frequency in seconds (Minimum **300s**). ⏱️
     * **Power Unit**: Select preferred unit for real-time sensors (**kW** or **W**). 📐
-
-*These settings can be adjusted later by clicking **Configure** on the integration card.*
 
 ---
 
@@ -60,34 +49,34 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 
 | Entity ID (Example) | Name (FI) | Description |
 | :--- | :--- | :--- |
-| `sensor.battery_power_kw` | Akun teho | Current battery charge (+) or discharge (-) |
-| `sensor.solar_power_kw` | Aurinkopaneelien teho | Total current solar production |
-| `sensor.grid_power_kw` | Verkon teho | Total current grid exchange |
-| `sensor.house_power_kw` | Kiinteistön kulutus | Current total building consumption |
-| `sensor.solar_to_house_kw` | Aurinkopaneeleilta kiinteistölle | Solar power used directly by the house |
-| `sensor.solar_to_battery_kw` | Aurinkopaneeleilta akkuun | Solar power going into storage |
-| `sensor.solar_to_grid_kw` | Aurinkopaneeleilta verkkoon | Solar power being exported |
-| `sensor.grid_to_house_kw` | Verkosta kiinteistölle | Grid power used by the house |
-| `sensor.grid_to_battery_kw` | Verkosta akkuun | Grid power used to charge the battery |
-| `sensor.battery_to_house_kw` | Akusta kiinteistölle | Battery power used by the house |
-| `sensor.battery_to_grid_kw` | Akusta verkkoon | Battery power being exported |
+| `battery_power_kw` | Akun teho | Current battery charge (+) or discharge (-) |
+| `solar_power_kw` | Aurinkopaneelien teho | Total current solar production |
+| `grid_power_kw` | Verkon teho | Total current grid exchange |
+| `house_power_kw` | Kiinteistön kulutus | Current total building consumption |
+| `solar_to_house_kw` | Aurinkopaneeleilta kiinteistölle | Solar power used directly by the house |
+| `solar_to_battery_kw` | Aurinkopaneeleilta akkuun | Solar power going into storage |
+| `solar_to_grid_kw` | Aurinkopaneeleilta verkkoon | Solar power being exported |
+| `grid_to_house_kw` | Verkosta kiinteistölle | Grid power used by the house |
+| `grid_to_battery_kw` | Verkosta akkuun | Grid power used to charge the battery |
+| `battery_to_house_kw` | Akusta kiinteistölle | Battery power used by the house |
+| `battery_to_grid_kw` | Akusta verkkoon | Battery power being exported |
 
 ### 📈 Energy Sensors (Cumulative Totals in kWh)
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
-| `sensor.house_energy_kwh` | Talon kokonaiskulutus | Total energy consumed by the property |
-| `sensor.solar_energy_kwh` | Aurinkopaneelien kokonaistuotto | Total energy produced by panels |
-| `sensor.grid_energy_kwh` | Verkosta ostettu kokonaisenergia | Total energy imported from grid |
-| `sensor.total_grid_export_kwh` | Verkkoon myyty kokonaisenergia | Total energy exported to grid |
-| `sensor.total_battery_charge_kwh` | Akun kokonaislataus | Total energy put into the battery |
-| `sensor.battery_energy_kwh` | Akusta otettu kokonaisenergia | Total energy taken from the battery |
+| `house_energy_kwh` | Talon kokonaiskulutus | Total energy consumed by the property |
+| `solar_energy_kwh` | Aurinkopaneelien kokonaistuotto | Total energy produced by panels |
+| `grid_energy_kwh` | Verkosta ostettu kokonaisenergia | Total energy imported from grid |
+| `total_grid_export_kwh` | Verkkoon myyty kokonaisenergia | Total energy exported to grid |
+| `total_battery_charge_kwh` | Akun kokonaislataus | Total energy put into the battery |
+| `battery_energy_kwh` | Akusta otettu kokonaisenergia | Total energy taken from the battery |
 
 ### 🌡️ Status & Market Data
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
-| `sensor.state_of_charge_percent` | Akun varaustila | Battery charge level (0–100%) |
-| `sensor.battery_temperature_c` | Akun lämpötila | Internal battery temperature |
-| `sensor.spot_price_cents_per_kwh` | Pörssisähkön hinta | Current electricity spot price |
+| `state_of_charge_percent` | Akun varaustila | Battery charge level (0–100%) |
+| `battery_temperature_c` | Akun lämpötila | Internal battery temperature |
+| `spot_price_cents_per_kwh` | Pörssisähkön hinta | Current electricity spot price |
 
 ---
 
