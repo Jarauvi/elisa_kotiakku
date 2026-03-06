@@ -17,6 +17,7 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 
 ## Features
 - All sensors wrapped inside Kotiakku device, renameable how you want
+- Support for multiple instances
 - Persistent energy metering sensors created for every power sensor
 - Total energy sensors for power flows from grid/solar to battery and battery/solar to grid
 
