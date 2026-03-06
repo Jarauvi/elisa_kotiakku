@@ -34,9 +34,7 @@
       "grid_to_battery_kw": { "name": "Verkosta akkuun" },
       "battery_to_house_kw": { "name": "Akusta kiinteistölle" },
       "battery_to_grid_kw": { "name": "Akusta verkkoon" },
-      "battery_energy_kwh": { "name": "Akusta otettu kokonaisenergia" },
       "solar_energy_kwh": { "name": "Aurinkopaneelien kokonaistuotto" },
-      "grid_energy_kwh": { "name": "Verkosta ostettu kokonaisenergia" },
       "house_energy_kwh": { "name": "Kiinteistön kokonaiskulutus" },
       "solar_to_house_kwh": { "name": "Aurinkopaneeleilta kiinteistölle" },
       "solar_to_battery_kwh": { "name": "Aurinkopaneeleilta akkuun" },
@@ -45,8 +43,10 @@
       "grid_to_battery_kwh": { "name": "Verkosta akkuun" },
       "battery_to_house_kwh": { "name": "Akusta kiinteistölle" },
       "battery_to_grid_kwh": { "name": "Akusta verkkoon" },
-      "total_battery_charge_kwh": { "name": "Akun kokonaislataus" },
+      "total_battery_charge_kwh": { "name": "Akun kokonaislatausenergia" },
+      "total_battery_discharge_kwh": { "name": "Akun kokonaispurkuenergia" },
       "total_grid_export_kwh": { "name": "Verkkoon myyty kokonaisenergia" },
+      "total_grid_import_kwh": { "name": "Verkosta ostettu kokonaisenergia" },
       "spot_price_cents_per_kwh": { "name": "Pörssisähkön hinta" }
     }
   }

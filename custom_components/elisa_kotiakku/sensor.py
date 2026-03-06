@@ -77,10 +77,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
         
         # Energy Sensors (kWh) - Calculated totals using Riemann sum integration
         # These take a Power sensor key as input to calculate the Energy over time
-        KotiakkuEnergySensor(coordinator, "battery_energy_kwh", "battery_power_kw", device_id, device_slug, entry),
+        KotiakkuEnergySensor(coordinator, "total_battery_charge_kwh", "battery_power_kw", device_id, device_slug, entry, direction="neg"),
+        KotiakkuEnergySensor(coordinator, "total_battery_discharge_kwh", "battery_power_kw", device_id, device_slug, entry, direction="pos"),
+        KotiakkuEnergySensor(coordinator, "total_grid_import_kwh", "grid_power_kw", device_id, device_slug, entry, direction="pos"),
+        KotiakkuEnergySensor(coordinator, "total_grid_export_kwh", "grid_power_kw", device_id, device_slug, entry, direction="neg"),
         KotiakkuEnergySensor(coordinator, "solar_energy_kwh", "solar_power_kw", device_id, device_slug, entry),
-        KotiakkuEnergySensor(coordinator, "grid_energy_kwh", "grid_power_kw", device_id, device_slug, entry),
-        KotiakkuEnergySensor(coordinator, "house_energy_kwh", "house_power_kw", device_id, device_slug, entry),
+        KotiakkuEnergySensor(coordinator, "house_energy_kwh", "house_power_kw", device_id, device_slug, entry, direction="neg"),
         KotiakkuEnergySensor(coordinator, "solar_to_house_kwh", "solar_to_battery_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "solar_to_battery_kwh", "solar_to_battery_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "solar_to_grid_kwh", "solar_to_grid_kw", device_id, device_slug, entry),
@@ -88,21 +90,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
         KotiakkuEnergySensor(coordinator, "grid_to_battery_kwh", "grid_to_battery_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "battery_to_house_kwh", "battery_to_house_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "battery_to_grid_kwh", "battery_to_grid_kw", device_id, device_slug, entry),
-
-        # Combined Energy Sensors - Sum multiple power flows before calculating energy
-        KotiakkuSumEnergySensor(
-            coordinator, 
-            "total_battery_charge_kwh", 
-            ["solar_to_battery_kwh", "grid_to_battery_kwh"], 
-            device_id, device_slug, entry
-        ),
-
-        KotiakkuSumEnergySensor(
-            coordinator, 
-            "total_grid_export_kwh", 
-            ["solar_to_grid_kwh", "battery_to_grid_kwh"], 
-            device_id, device_slug, entry
-        ),
 
         # Specialized Sensors - Binary, Temperature, and Percentages
         KotiakkuTemperatureSensor(coordinator, "battery_temperature_celsius", device_id, device_slug, entry),
@@ -183,13 +170,14 @@ class KotiakkuEnergySensor(KotiakkuSensor, RestoreEntity):
     _attr_native_unit_of_measurement = UnitOfEnergy.KILO_WATT_HOUR
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
 
-    def __init__(self, coordinator, key, power_key, device_id, device_slug, entry):
+    def __init__(self, coordinator, key, power_key, device_id, device_slug, entry, direction=None):
         """Initialize energy sensor with a reference to its source power key."""
         super().__init__(coordinator, key, device_id, device_slug, entry)
         self._power_key = power_key
         self._state = None
         self._last_run = None
         self._restored = False
+        self._direction = direction
 
     async def async_added_to_hass(self):
         """Called when entity is added to HA. Restores previous state from database."""
@@ -225,15 +213,19 @@ class KotiakkuEnergySensor(KotiakkuSensor, RestoreEntity):
         if self.coordinator.data is None:
             return round(self._state, 3) if self._state is not None else 0.0
 
-        power = self.coordinator.data.get(self._power_key)
+        power_val = self.coordinator.data.get(self._power_key)
         
-        if power is None:
-            return round(self._state, 3)
-        
-        power_val = abs(float(power))
+        # Apply Directional Filter
 
-        if isinstance(self._last_run, int):
-            self._last_run = None
+        if self._direction == "pos":
+            # Only count positive power (discharging/exporting)
+            power_val = max(0, power_val)
+        elif self._direction == "neg":
+            # Only count negative power (charging/importing)
+            power_val = abs(min(0, power_val))
+        else:
+            # Fallback to absolute if no direction specified
+            power_val = abs(power_val)
 
         # Initial run sets the timestamp without adding energy
         if self._last_run is None:

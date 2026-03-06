@@ -34,9 +34,7 @@
       "grid_to_battery_kw": { "name": "Grid power to battery" },
       "battery_to_house_kw": { "name": "Battery power to house" },
       "battery_to_grid_kw": { "name": "Battery power to grid" },
-      "battery_energy_kwh": { "name": "Battery total energy" },
       "solar_energy_kwh": { "name": "Solar total energy production" },
-      "grid_energy_kwh": { "name": "Grid total energy" },
       "house_energy_kwh": { "name": "House energy consumption" },
       "solar_to_house_kwh": { "name": "Solar energy to house" },
       "solar_to_battery_kwh": { "name": "Solar energy to battery" },
@@ -45,8 +43,10 @@
       "grid_to_battery_kwh": { "name": "Grid energy to battery" },
       "battery_to_house_kwh": { "name": "Battery energy to house" },
       "battery_to_grid_kwh": { "name": "Battery energy to grid" },
-      "total_battery_charge_kwh": { "name": "Total battery charge" },
+      "total_battery_charge_kwh": { "name": "Total battery charge energy" },
+      "total_battery_discharge_kwh": { "name": "Total battery discharge energy" },
       "total_grid_export_kwh": { "name": "Total grid export" },
+      "total_grid_import_kwh": { "name": "Total grid import" },
       "spot_price_cents_per_kwh": { "name": "Spot price" }
     }
   }
