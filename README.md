@@ -16,10 +16,11 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 ---
 
 ## Features
-- All sensors wrapped inside Kotiakku device, renameable how you want
-- Support for multiple instances
+- All entities are wrapped inside Kotiakku device
+- Support for multiple Kotiakku instances
 - Persistent energy metering sensors created for every power sensor
-- Total energy sensors for power flows from grid/solar to battery and battery/solar to grid
+- Total energy sensors for power flows from grid+solar to battery and battery+solar to grid
+- Localized to FI and EN
 
 ---
 
@@ -102,6 +103,12 @@ To populate your **Energy Dashboard**, use these sensors:
 * **🔋 Battery System**:
     * **Energy In**: `total_battery_charge_kwh`
     * **Energy Out**: `total_battery_discharge_kwh`
+
+---
+
+## Roadmap
+
+- add button entities for resetting energy counters
 
 ---
 
