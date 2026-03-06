@@ -1,4 +1,6 @@
-# 🔋 Elisa Kotiakku for Home Assistant
+<img src="https://github.com/Jarauvi/elisa_kotiakku/blob/main/custom_components/elisa_kotiakku/brand/icon.png?raw=true" width="128" height="128">
+
+# Elisa Kotiakku for Home Assistant
 
 <div align="left">
     <img alt="Home Assistant" src="https://img.shields.io/badge/home%20assistant-%2341BDF5.svg"/>
@@ -13,7 +15,14 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 
 ---
 
-## 🛠 Installation
+## Features
+- All sensors wrapped inside Kotiakku device, renameable how you want
+- Persistent energy metering sensors created for every power sensor
+- Total energy sensors for power flows from grid/solar to battery and battery/solar to grid
+
+---
+
+## Installation
 
 ### Option 1: HACS (Recommended) 🚀
 1.  Open **HACS** in your Home Assistant instance.
@@ -29,7 +38,7 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 1.  Navigate to **Settings** > **Devices & Services**.
 2.  Click **Add Integration** ➕ and search for **Elisa Kotiakku**.
@@ -42,7 +51,7 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 
 ---
 
-## 📊 Available Sensors
+## Available Sensors
 
 ### ⚡ Power Sensors (Current Flow)
 *The unit (kW or W) and Entity ID suffix update based on your configuration.*
@@ -61,21 +70,21 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 | `battery_to_house_kw` | Akusta kiinteistölle | Battery power used by the house |
 | `battery_to_grid_kw` | Akusta verkkoon | Battery power being exported |
 
-### 📈 Energy Sensors (Cumulative Totals in kWh)
+### Energy Sensors (Cumulative Totals in kWh)
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
 | `house_energy_kwh` | Talon kokonaiskulutus | Total energy consumed by the property |
 | `solar_energy_kwh` | Aurinkopaneelien kokonaistuotto | Total energy produced by panels |
-| `grid_energy_kwh` | Verkosta ostettu kokonaisenergia | Total energy imported from grid |
+| `total_grid_import_kwh` | Verkosta ostettu kokonaisenergia | Total energy imported from grid |
 | `total_grid_export_kwh` | Verkkoon myyty kokonaisenergia | Total energy exported to grid |
 | `total_battery_charge_kwh` | Akun kokonaislataus | Total energy put into the battery |
-| `battery_energy_kwh` | Akusta otettu kokonaisenergia | Total energy taken from the battery |
+| `total_battery_discharge_kwh` | Akun kokonaispurku | Total energy taken from the battery |
 
-### 🌡️ Status & Market Data
+### Status & Market Data
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
 | `state_of_charge_percent` | Akun varaustila | Battery charge level (0–100%) |
-| `battery_temperature_c` | Akun lämpötila | Internal battery temperature |
+| `battery_temperature_celsius` | Akun lämpötila | Internal battery temperature |
 | `spot_price_cents_per_kwh` | Pörssisähkön hinta | Current electricity spot price |
 
 ---
@@ -85,13 +94,13 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 To populate your **Energy Dashboard**, use these sensors:
 
 * **🔌 Electricity Grid**: 
-    * **Consumption**: `grid_energy_kwh`
+    * **Consumption**: `total_grid_import_kwh`
     * **Return to Grid**: `total_grid_export_kwh`
 * **☀️ Solar Production**: 
     * **Solar Production**: `solar_energy_kwh`
 * **🔋 Battery System**:
     * **Energy In**: `total_battery_charge_kwh`
-    * **Energy Out**: `battery_energy_kwh`
+    * **Energy Out**: `total_battery_discharge_kwh`
 
 ---
 
