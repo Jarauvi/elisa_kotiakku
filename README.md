@@ -1,72 +1,65 @@
-<img src="https://github.com/Jarauvi/elisa_kotiakku/blob/main/custom_components/elisa_kotiakku/brand/icon.png?raw=true" width="128" height="128">
+<div align="center">
+  <img src="https://github.com/Jarauvi/elisa_kotiakku/blob/main/custom_components/elisa_kotiakku/brand/icon.png?raw=true" width="128" height="128">
 
-# Elisa Kotiakku for Home Assistant
+  # Elisa Kotiakku for Home Assistant
 
-<div align="left">
-    <img alt="Home Assistant" src="https://img.shields.io/badge/home%20assistant-%2341BDF5.svg"/>
-    <img alt="HACS" src="https://img.shields.io/badge/HACS-Custom-orange.svg"/>
-    <img alt="Cloud polling" src="https://img.shields.io/badge/IOT_class-Cloud_polling-blue">
-    <img alt="Static Badge" src="https://img.shields.io/badge/License-MIT-green">
-    <img alt="Version" src="https://img.shields.io/github/manifest-json/v/Jarauvi/elisa_kotiakku?filename=custom_components%2Felisa_kotiakku%2Fmanifest.json&label=Version">
-    <img alt="Tests" src="https://github.com/Jarauvi/elisa_kotiakku/actions/workflows/tests.yaml/badge.svg"/>
+  [![Home Assistant](https://img.shields.io/badge/home%20assistant-%2341BDF5.svg?style=for-the-badge&logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
+  [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://hacs.xyz/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
+  [![Version](https://img.shields.io/github/manifest-json/v/Jarauvi/elisa_kotiakku?filename=custom_components%2Felisa_kotiakku%2Fmanifest.json&label=Version)](https://github.com/Jarauvi/elisa_kotiakku)
+  [![Tests](https://github.com/Jarauvi/elisa_kotiakku/actions/workflows/tests.yaml/badge.svg)](https://github.com/Jarauvi/elisa_kotiakku/actions)
+  ![Cloud Polling](https://img.shields.io/badge/IOT_class-Cloud_polling-blue)
+
+  **Integrate your Elisa Kotiakku energy storage system into Home Assistant.** *Monitor solar production, battery health, and real-time energy costs.*
 </div>
 
-This custom component integrates the **Elisa Kotiakku** energy storage system into Home Assistant. It provides real-time monitoring of solar production, battery status, house consumption, and grid exchange. ⚡
-
 ---
 
-## Features
-- All entities are wrapped inside Kotiakku device
-- Support for multiple Kotiakku instances
-- Persistent energy metering sensors created for every power sensor
-- Total energy sensors for power flows from grid+solar to battery and battery+solar to grid
-- Localized to FI and EN
+## ✨ Features
 
----
+- **Device-Centric Design**: All sensors are automatically grouped under a single **Elisa Kotiakku device**.
+- **Multi-Instance Support**: Manage multiple battery systems within a single Home Assistant instance.
+- **Persistent Energy Metering**: Power sensors (kW/W) are automatically integrated into energy sensors (kWh) using Riemann sum logic, ensuring stable data for long-term statistics.
+- **Smart Analytics**: Built-in calculations for conversion loss, round-trip efficiency, and time-to-target estimations.
+- **Localized**: Full native support for **Finnish (FI)** and **English (EN)**.
 
-## Roadmap
 
-- add button entities for resetting energy counters
-- add efficiency ratio sensor
-- add cost savings estimation sensor
-- add sensors to estimate when battery is depleted/charged with current usage/charging power
+## 🚀 Installation
 
----
+### Option 1: HACS (Recommended)
+1. Open **HACS** > **Integrations**.
+2. Click the three dots in the top right and select **Custom Repositories**.
+3. Paste: `https://github.com/Jarauvi/elisa_kotiakku`
+4. Select category **Integration** and click **Add**.
+5. Find "Elisa Kotiakku" and click **Download**.
+6. **Restart** Home Assistant.
 
-## Installation
+### Option 2: Manual
+1. Download the `elisa_kotiakku` folder from `custom_components/`.
+2. Copy it to your Home Assistant `config/custom_components/` directory.
+3. **Restart** Home Assistant.
 
-### Option 1: HACS (Recommended) 🚀
-1.  Open **HACS** in your Home Assistant instance.
-2.  Navigate to **Integrations** > **Custom Repositories** (top right menu).
-3.  Paste your GitHub repository URL and select **Integration** as the category.
-4.  Click **Install**.
-5.  **Restart** Home Assistant. 🔄
 
-### Option 2: Manual 📂
-1.  Download the `elisa_kotiakku` folder from this repository.
-2.  Copy the folder to your `config/custom_components/` directory.
-3.  **Restart** Home Assistant. 🔄
+## ⚙️ Configuration
 
----
+1. Navigate to **Settings** > **Devices & Services**.
+2. Click **Add Integration** ➕ and search for **Elisa Kotiakku**.
+3. Configure the following options:
 
-## Configuration
+| Option | Description |
+| :--- | :--- |
+| **Device Name** | The name for this battery instance (e.g., "Kotiakku"). |
+| **API URL** | The endpoint provided by Elisa (just use default one). |
+| **API Key** | Your private authentication key (get from the Kotiakku app). |
+| **Update Interval** | Polling frequency in seconds (Minimum **300s** recommended). |
+| **Power Unit** | Choose between **kW** or **W**. |
+| **Battery Capacity** | Nominal capacity in **kWh** (used for cycle counting and time estimation). |
 
-1.  Navigate to **Settings** > **Devices & Services**.
-2.  Click **Add Integration** ➕ and search for **Elisa Kotiakku**.
-3.  Fill in the following details:
-    * **Device Name**: e.g., `Kotiakku` 🏠
-    * **API URL**: API endpoint (provided by default). 🌐
-    * **API Key**: Your API key (get from Kotiakku app). 🔑
-    * **Update Interval**: Polling frequency in seconds (Minimum **300s**). ⏱️
-    * **Power Unit**: Select preferred unit for real-time sensors (**kW** or **W**). 📐
 
----
-
-## Available Sensors
+## 📊 Available Sensors
 
 ### ⚡ Power Sensors (Current Flow)
-*The unit (kW or W) and Entity ID suffix update based on your configuration.*
-
 | Entity ID (Example) | Name (FI) | Description |
 | :--- | :--- | :--- |
 | `battery_power_kw` | Akun teho | Current battery charge (+) or discharge (-) |
@@ -80,8 +73,9 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 | `grid_to_battery_kw` | Verkosta akkuun | Grid power used to charge the battery |
 | `battery_to_house_kw` | Akusta kiinteistölle | Battery power used by the house |
 | `battery_to_grid_kw` | Akusta verkkoon | Battery power being exported |
+| `battery_loss_kw` | Akun tehohäviö | Estimated power lost during conversion |
 
-### Energy Sensors (Cumulative Totals in kWh)
+### 📊 Energy Sensors (Cumulative Totals in kWh)
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
 | `house_energy_kwh` | Talon kokonaiskulutus | Total energy consumed by the property |
@@ -91,30 +85,32 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 | `total_battery_charge_kwh` | Akun kokonaislataus | Total energy put into the battery |
 | `total_battery_discharge_kwh` | Akun kokonaispurku | Total energy taken from the battery |
 
-### Status & Market Data
+### 🔋 Diagnostics & Battery State
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
 | `state_of_charge_percent` | Akun varaustila | Battery charge level (0–100%) |
+| `battery_state` | Akun tila | Current mode: *Lataa*, *Purkaa*, or *Odottaa* |
 | `battery_temperature_celsius` | Akun lämpötila | Internal battery temperature |
+| `battery_efficiency_ratio` | Akun hyötysuhde | Calculated round-trip efficiency percentage |
+| `battery_charge_efficiency` | Latauksen hyötysuhde | Calculated charging efficiency percentage |
+| `battery_discharge_efficiency` | Purkamisen hyötysuhde | Calculated discharging efficiency percentage |
+| `battery_cycle_count` | Akun syklit | Calculated discharge cycles based on capacity |
+| `time_to_90_percent` | Lataus 90% varaustilaan | Est. minutes until 90% SoC is reached |
+| `time_to_15_percent` | Purku 15% varaustilaan | Est. minutes until 15% SoC is reached |
+
+### 💶 Market Data and Savings
+| Entity ID | Name (FI) | Description |
+| :--- | :--- | :--- |
 | `spot_price_cents_per_kwh` | Pörssisähkön hinta | Current electricity spot price |
+| `net_savings_rate` | Tuntikohtainen säästö | Current financial impact (€/h) based on spot price |
 
----
 
-## 📊 Energy Dashboard Setup
+## 🗺️ Roadmap
+- [ ] Add button entities to reset energy counters manually.
+- [x] add efficiency ratio sensor
+- [x] add cost savings estimation sensor
+- [x] add sensors to estimate when battery is depleted/charged with current usage/charging power
 
-To populate your **Energy Dashboard**, use these sensors:
-
-* **🔌 Electricity Grid**: 
-    * **Consumption**: `total_grid_import_kwh`
-    * **Return to Grid**: `total_grid_export_kwh`
-* **☀️ Solar Production**: 
-    * **Solar Production**: `solar_energy_kwh`
-* **🔋 Battery System**:
-    * **Energy In**: `total_battery_charge_kwh`
-    * **Energy Out**: `total_battery_discharge_kwh`
-
----
 
 ## ⚠️ Disclaimer
 This integration is a community project and is **not** affiliated with, endorsed by, or supported by Elisa. Use at your own risk.
-
