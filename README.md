@@ -111,6 +111,7 @@ To populate your **Energy Dashboard**, use these sensors:
 - add button entities for resetting energy counters
 - add efficiency ratio sensor
 - add cost savings estimation sensor
+- add sensors to estimate when battery is depleted/charged with current usage/charging power
 
 ---
 
