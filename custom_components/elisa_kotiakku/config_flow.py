@@ -20,7 +20,9 @@ from .const import (
     CONF_POWER_UNIT,
     DEFAULT_POWER_UNIT,
     UNIT_W,
-    UNIT_KW
+    UNIT_KW,
+    CONF_BATTERY_CAPACITY,
+    DEFAULT_BATTERY_CAPACITY
 )
 
 async def validate_input(hass, data):
@@ -61,6 +63,12 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     
     VERSION = 1
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get the options flow for this handler."""
+        return ElisaKotiakkuOptionsFlowHandler(config_entry)
+
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
         errors = {}
@@ -85,6 +93,9 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_NAME, default=DEFAULT_NAME): str,
                 vol.Required(CONF_URL, default="https://residential.gridle.com/api/public/measurements"): str,
                 vol.Required(CONF_API_KEY): str,
+                vol.Required(CONF_BATTERY_CAPACITY, default=DEFAULT_BATTERY_CAPACITY): vol.All(
+                    vol.Coerce(float), vol.Range(min=0.1)
+                ),
                 vol.Required(CONF_POWER_UNIT, default=DEFAULT_POWER_UNIT): vol.In([UNIT_W, UNIT_KW]),
                 vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(
                     vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)
@@ -93,3 +104,42 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+class ElisaKotiakkuOptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle options flow for Elisa Kotiakku."""
+
+    def __init__(self, config_entry):
+        """Initialize options flow."""
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        """Manage the options."""
+        if user_input is not None:
+            return self.async_create_entry(title="", data=user_input)
+
+        # We pull the current values so the form is pre-filled
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Required(
+                    CONF_POWER_UNIT, 
+                    default=self.config_entry.options.get(
+                        CONF_POWER_UNIT, 
+                        self.config_entry.data.get(CONF_POWER_UNIT, DEFAULT_POWER_UNIT)
+                    )
+                ): vol.In([UNIT_W, UNIT_KW]),
+                vol.Required(
+                    CONF_BATTERY_CAPACITY,
+                    default=self.config_entry.options.get(
+                        CONF_BATTERY_CAPACITY,
+                        self.config_entry.data.get(CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY)
+                    )
+                ): vol.All(vol.Coerce(float), vol.Range(min=0.1)),
+                vol.Optional(
+                    CONF_SCAN_INTERVAL,
+                    default=self.config_entry.options.get(
+                        CONF_SCAN_INTERVAL,
+                        self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+                    )
+                ): vol.All(vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL)),
+            }),
+        )

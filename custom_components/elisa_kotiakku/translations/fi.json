@@ -3,13 +3,14 @@
     "step": {
       "user": {
         "title": "Elisa Kotiakku määritys",
-        "description": "Rajapinnan määritys",
+        "description": "Integraation määritys",
         "data": {
           "name": "Laitteen nimi",
           "url": "Rajapinnan URL",
           "api_key": "API-avain",
           "power_unit": "Tehon yksikkö",
-          "scan_interval": "Päivitysväli (sekuntia)"
+          "scan_interval": "Päivitysväli (sekuntia)",
+          "battery_capacity": "Akun kapasiteetti (kWh)"
         }
       }
     },
@@ -17,6 +18,19 @@
       "cannot_connect": "Yhteys palvelimeen epäonnistui. Tarkista URL",
       "invalid_auth": "Virheellinen API-avain",
       "unknown": "Tuntematon virhe tapahtui"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Elisa Kotiakku määritys",
+        "description": "Integraation määritys",
+        "data": {
+          "power_unit": "Tehon yksikkö",
+          "scan_interval": "Päivitysväli (sekuntia)",
+          "battery_capacity": "Akun kapasiteetti (kWh)"
+        }
+      }
     }
   },
   "entity": {
@@ -47,7 +61,23 @@
       "total_battery_discharge_kwh": { "name": "Akun kokonaispurkuenergia" },
       "total_grid_export_kwh": { "name": "Verkkoon myyty kokonaisenergia" },
       "total_grid_import_kwh": { "name": "Verkosta ostettu kokonaisenergia" },
-      "spot_price_cents_per_kwh": { "name": "Pörssisähkön hinta" }
+      "spot_price_cents_per_kwh": { "name": "Pörssisähkön hinta" },
+      "battery_efficiency_ratio": { "name": "Akun kokonais­hyötysuhde" },
+      "battery_charge_efficiency": { "name": "Latauksen hyötysuhde" },
+      "battery_discharge_efficiency": { "name": "Purkamisen hyötysuhde" },
+      "battery_loss_kw": { "name": "Akun häviöteho" },
+      "time_to_90_percent": { "name": "Ladattu 90% tasoon" },
+      "time_to_15_percent": { "name": "Purettu 15% tasoon" },
+      "net_savings_rate": { "name": "Säästöt / tunti" },
+      "battery_cycle_count": { "name": "Akun lataussyklit" },
+      "battery_state": {
+        "name": "Akun tila",
+        "state": {
+          "charging": "Lataa",
+          "discharging": "Purkaa",
+          "idle": "Odottaa"
+        }
+      }
     }
   }
 }

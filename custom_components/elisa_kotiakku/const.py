@@ -37,3 +37,7 @@ DEFAULT_NAME = "Kotiakku"
 # MIN_SCAN_INTERVAL: The safety floor to prevent overwhelming the Elisa API/Huawei cloud
 DEFAULT_SCAN_INTERVAL = 300
 MIN_SCAN_INTERVAL = 300
+
+# Battery capacity
+CONF_BATTERY_CAPACITY = "battery_capacity"
+DEFAULT_BATTERY_CAPACITY = 21.0

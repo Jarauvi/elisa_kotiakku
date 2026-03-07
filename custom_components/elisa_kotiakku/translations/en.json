@@ -19,6 +19,19 @@
       "unknown": "An unknown error occurred"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Elisa Kotiakku Reconfiguration",
+        "description": "API Configuration",
+        "data": {
+          "power_unit": "Power unit",
+          "scan_interval": "Update Interval (seconds)",
+          "battery_capacity": "Battery capacity (kWh)"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "battery_power_kw": { "name": "Battery power" },
@@ -47,7 +60,23 @@
       "total_battery_discharge_kwh": { "name": "Total battery discharge energy" },
       "total_grid_export_kwh": { "name": "Total grid export" },
       "total_grid_import_kwh": { "name": "Total grid import" },
-      "spot_price_cents_per_kwh": { "name": "Spot price" }
+      "spot_price_cents_per_kwh": { "name": "Spot price" },
+      "battery_efficiency_ratio": { "name": "Battery round-trip efficiency" },
+      "battery_charge_efficiency": { "name": "Charging efficiency" },
+      "battery_discharge_efficiency": { "name": "Discharging efficiency" },
+      "battery_loss_kw": { "name": "Battery power loss" },
+      "time_to_90_percent": { "name": "Time until charged to 90%" },
+      "time_to_15_percent": { "name": "Time until discharged to 15%" },
+      "net_savings_rate": { "name": "Profit / hour" },
+      "battery_cycle_count": { "name": "Battery charging cycles" },
+      "battery_state": { 
+        "name": "Battery state",
+        "state": {
+          "charging": "Charging",
+          "discharging": "Discharging",
+          "idle": "Idle"
+        }
+      }
     }
   }
 }
