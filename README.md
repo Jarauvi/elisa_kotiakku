@@ -109,8 +109,11 @@ To populate your **Energy Dashboard**, use these sensors:
 ## Roadmap
 
 - add button entities for resetting energy counters
+- add efficiency ratio sensor
+- add cost savings estimation sensor
 
 ---
 
 ## ⚠️ Disclaimer
 This integration is a community project and is **not** affiliated with, endorsed by, or supported by Elisa. Use at your own risk.
+
