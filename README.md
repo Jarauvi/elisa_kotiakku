@@ -24,6 +24,15 @@ This custom component integrates the **Elisa Kotiakku** energy storage system in
 
 ---
 
+## Roadmap
+
+- add button entities for resetting energy counters
+- add efficiency ratio sensor
+- add cost savings estimation sensor
+- add sensors to estimate when battery is depleted/charged with current usage/charging power
+
+---
+
 ## Installation
 
 ### Option 1: HACS (Recommended) 🚀
@@ -103,15 +112,6 @@ To populate your **Energy Dashboard**, use these sensors:
 * **🔋 Battery System**:
     * **Energy In**: `total_battery_charge_kwh`
     * **Energy Out**: `total_battery_discharge_kwh`
-
----
-
-## Roadmap
-
-- add button entities for resetting energy counters
-- add efficiency ratio sensor
-- add cost savings estimation sensor
-- add sensors to estimate when battery is depleted/charged with current usage/charging power
 
 ---
 
