@@ -62,13 +62,40 @@
       "total_grid_import_kwh": { "name": "Total grid import" },
       "spot_price_cents_per_kwh": { "name": "Spot price" },
       "battery_efficiency_ratio": { "name": "Battery round-trip efficiency" },
-      "battery_charge_efficiency": { "name": "Charging efficiency" },
-      "battery_discharge_efficiency": { "name": "Discharging efficiency" },
+      "battery_charge_efficiency": {
+        "name": "Charging efficiency",
+        "state": {
+          "unknown": "Not charging",
+          "unavailable": "Not charging"
+        }
+      },
+      "battery_discharge_efficiency": {
+        "name": "Discharging efficiency",
+        "state": {
+          "unknown": "Not discharging",
+          "unavailable": "Not discharging"
+        }
+      },
       "battery_loss_kw": { "name": "Battery power loss" },
-      "time_to_90_percent": { "name": "Time until charged to 90%" },
-      "time_to_15_percent": { "name": "Time until discharged to 15%" },
+      "time_to_90_percent": { 
+        "name": "Time until charged to 90%",
+        "state": {
+          "unknown": "not charging",
+          "unavailable": "not charging"
+        }
+      },
+      "time_to_15_percent": { 
+        "name": "Time until discharged to 15%",
+        "state": {
+          "unknown": "not discharging",
+          "unavailable": "not discharging"
+        }
+      },
       "net_savings_rate": { "name": "Profit / hour" },
-      "battery_cycle_count": { "name": "Battery charging cycles" },
+      "battery_cycle_count": { 
+        "name": "Battery charging cycles",
+        "unit_of_measurement": "sykliä"
+      },
       "battery_state": { 
         "name": "Battery state",
         "state": {

@@ -14,6 +14,7 @@ from homeassistant.const import (
     PERCENTAGE,
 )
 
+from homeassistant.const import UnitOfTime
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import slugify
@@ -22,34 +23,34 @@ from .const import DOMAIN, MANUFACTURER, MODEL, CONF_NAME, DEFAULT_NAME, CONF_PO
 # Mapping of sensor keys to Material Design Icons (MDI)
 # If a key is not here or set to None, HA will fall back to DeviceClass defaults
 ICON_MAP = {
-      "battery_power_kw": "mdi:home-battery",
-      "battery_temperature_c": None,
-      "state_of_charge_percent": None,
-      "solar_power_kw": "mdi:solar-power",
-      "grid_power_kw": "mdi:transmission-tower",
-      "house_power_kw": "mdi:home-lightning-bolt",
-      "solar_to_house_kw": "mdi:solar-power-variant",
-      "solar_to_battery_kw": "mdi:solar-power-variant",
-      "solar_to_grid_kw": "mdi:solar-power-variant",
-      "grid_to_house_kw": "mdi:transmission-tower-export",
-      "grid_to_battery_kw": "mdi:transmission-tower-export",
-      "battery_to_house_kw": "mdi:home-battery",
-      "battery_to_grid_kw": "mdi:home-battery",
-      "battery_energy_kwh": "mdi:home-battery",
-      "solar_energy_kwh": "mdi:solar-power-variant",
-      "grid_energy_kwh": "mdi:transmission-tower-export",
-      "house_energy_kwh": "mdi:home-lightning-bolt",
-      "solar_to_house_kwh": "mdi:solar-power-variant",
-      "solar_to_battery_kwh": "mdi:solar-power-variant",
-      "solar_to_grid_kwh": "mdi:solar-power-variant",
-      "grid_to_house_kwh": "mdi:transmission-tower-export",
-      "grid_to_battery_kwh": "mdi:transmission-tower-export",
-      "battery_to_house_kwh": "mdi:home-battery",
-      "battery_to_grid_kwh": "mdi:home-battery",
-      "total_battery_charge_kwh": "mdi:battery-charging",
-      "total_grid_export_kwh": "mdi:transmission-tower-import",
-      "spot_price_cents_per_kwh":  "mdi:cash-fast",
-      "battery_efficiency_ratio": "mdi:percent"
+    "battery_power_kw": "mdi:home-battery",
+    "battery_temperature_c": None,
+    "state_of_charge_percent": None,
+    "solar_power_kw": "mdi:solar-power",
+    "grid_power_kw": "mdi:transmission-tower",
+    "house_power_kw": "mdi:home-lightning-bolt",
+    "solar_to_house_kw": "mdi:solar-power-variant",
+    "solar_to_battery_kw": "mdi:solar-power-variant",
+    "solar_to_grid_kw": "mdi:solar-power-variant",
+    "grid_to_house_kw": "mdi:transmission-tower-export",
+    "grid_to_battery_kw": "mdi:transmission-tower-export",
+    "battery_to_house_kw": "mdi:home-battery",
+    "battery_to_grid_kw": "mdi:home-battery",
+    "battery_energy_kwh": "mdi:home-battery",
+    "solar_energy_kwh": "mdi:solar-power-variant",
+    "grid_energy_kwh": "mdi:transmission-tower-export",
+    "house_energy_kwh": "mdi:home-lightning-bolt",
+    "solar_to_house_kwh": "mdi:solar-power-variant",
+    "solar_to_battery_kwh": "mdi:solar-power-variant",
+    "solar_to_grid_kwh": "mdi:solar-power-variant",
+    "grid_to_house_kwh": "mdi:transmission-tower-export",
+    "grid_to_battery_kwh": "mdi:transmission-tower-export",
+    "battery_to_house_kwh": "mdi:home-battery",
+    "battery_to_grid_kwh": "mdi:home-battery",
+    "total_battery_charge_kwh": "mdi:battery-charging",
+    "total_grid_export_kwh": "mdi:transmission-tower-import",
+    "spot_price_cents_per_kwh":  "mdi:cash-fast",
+    "battery_efficiency_ratio": "mdi:percent"
     }
 
 async def async_setup_entry(hass, entry, async_add_entities):
@@ -81,12 +82,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         
         # Energy Sensors (kWh) - Calculated totals using Riemann sum integration
         # These take a Power sensor key as input to calculate the Energy over time
-        KotiakkuEnergySensor(coordinator, "total_battery_charge_kwh", "battery_power_kw", device_id, device_slug, entry, direction="neg"),
-        KotiakkuEnergySensor(coordinator, "total_battery_discharge_kwh", "battery_power_kw", device_id, device_slug, entry, direction="pos"),
-        KotiakkuEnergySensor(coordinator, "total_grid_import_kwh", "grid_power_kw", device_id, device_slug, entry, direction="pos"),
-        KotiakkuEnergySensor(coordinator, "total_grid_export_kwh", "grid_power_kw", device_id, device_slug, entry, direction="neg"),
         KotiakkuEnergySensor(coordinator, "solar_energy_kwh", "solar_power_kw", device_id, device_slug, entry),
-        KotiakkuEnergySensor(coordinator, "house_energy_kwh", "house_power_kw", device_id, device_slug, entry, direction="neg"),
         KotiakkuEnergySensor(coordinator, "solar_to_house_kwh", "solar_to_battery_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "solar_to_battery_kwh", "solar_to_battery_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "solar_to_grid_kwh", "solar_to_grid_kw", device_id, device_slug, entry),
@@ -94,6 +90,12 @@ async def async_setup_entry(hass, entry, async_add_entities):
         KotiakkuEnergySensor(coordinator, "grid_to_battery_kwh", "grid_to_battery_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "battery_to_house_kwh", "battery_to_house_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "battery_to_grid_kwh", "battery_to_grid_kw", device_id, device_slug, entry),
+        KotiakkuEnergySensor(coordinator, "house_energy_kwh", "house_power_kw", device_id, device_slug, entry),
+
+        KotiakkuSumEnergySensor(coordinator, "total_battery_charge_kwh", ["solar_to_battery_kwh", "grid_to_battery_kwh"], device_id, device_slug, entry),
+        KotiakkuSumEnergySensor(coordinator, "total_battery_discharge_kwh", ["battery_to_house_kwh", "battery_to_grid_kwh"], device_id, device_slug, entry),
+        KotiakkuSumEnergySensor(coordinator, "total_grid_import_kwh", ["grid_to_house_kwh", "grid_to_battery_kwh"], device_id, device_slug, entry),
+        KotiakkuSumEnergySensor(coordinator, "total_grid_export_kwh", ["solar_to_grid_kwh", "battery_to_grid_kwh"], device_id, device_slug, entry),
 
         # Specialized Sensors
         KotiakkuTemperatureSensor(coordinator, "battery_temperature_celsius", device_id, device_slug, entry),
@@ -107,7 +109,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
             "battery_efficiency_ratio",
             "total_battery_discharge_kwh",
             "total_battery_charge_kwh",
-            battery_capacity,
             device_id,
             device_slug,
             entry
@@ -241,22 +242,14 @@ class KotiakkuEnergySensor(KotiakkuSensor, RestoreEntity):
         if not self._restored:
             return None
 
-        power_decimals = 0 if self._unit_pref == UNIT_W else 3
-
-        if self.coordinator.data is None:
-            return round(self._state, power_decimals) if self._state is not None else 0.0
-
         # Get the timestamp of the last successful API update
         now = dt_util.utcnow()
 
-        power_val = self.coordinator.data.get(self._power_key)
-
-        if self._unit_pref == UNIT_W:
-            power_val = power_val / 1000.0
-
         if self.coordinator.data is None:
-            return round(self._state, power_decimals) if self._state is not None else 0.0
+            return round(self._state, 3) if self._state is not None else 0.0
 
+        power_val = self.coordinator.data.get(self._power_key)
+        
         # Apply Directional Filter
 
         if self._direction == "pos":
@@ -272,7 +265,7 @@ class KotiakkuEnergySensor(KotiakkuSensor, RestoreEntity):
         # Initial run sets the timestamp without adding energy
         if self._last_run is None:
             self._last_run = now
-            return round(self._state, power_decimals)
+            return round(self._state, 3)
 
         # Calculate time delta in hours (for kWh)
         diff = (now - self._last_run).total_seconds() / 3600
@@ -283,39 +276,25 @@ class KotiakkuEnergySensor(KotiakkuSensor, RestoreEntity):
                 self._state = new_state
             self._last_run = now
             
-        return round(self._state, power_decimals)
-
+        return round(self._state, 3)
+        
 class KotiakkuSumEnergySensor(KotiakkuEnergySensor):
-    """Calculates Energy (kWh) by summing multiple power sources.
-    
-    Useful for 'Total Grid Export' where multiple power flows contribute 
-    to a single energy total.
-    """
-
-    def __init__(self, coordinator, key, energy_keys, device_id, device_slug, entry):
-        """Initialize with a list of power keys to be summed."""
-        super().__init__(coordinator, key, energy_keys[0], device_id, device_slug, entry)
-        self._energy_keys = energy_keys 
+    """Sums multiple ENERGY entities (kWh), not power."""
+    def __init__(self, coordinator, key, source_keys, device_id, device_slug, entry):
+        # We don't use power_key here, so we pass None to parent
+        super().__init__(coordinator, key, None, device_id, device_slug, entry)
+        self._source_keys = source_keys
+        self._device_slug = device_slug
 
     @property
     def native_value(self):
-        """Sum all configured power sources and integrate over time."""
-
-        if self._unit_pref == UNIT_W:
-            power_decimals = 0
-
-        if self.coordinator.data is None:
-            return round(self._state, power_decimals)
-
-        current_sum = 0.0
-        for k in self._energy_keys:
-            val = self.coordinator.data.get(k)
-            if val is not None:
-                current_sum += float(val)
-
-        self._state = current_sum
-
-        return round(self._state, power_decimals)
+        total = 0.0
+        for k in self._source_keys:
+            # We look for the already calculated energy entities in the state machine
+            state = self.hass.states.get(f"sensor.{self._device_slug}_{k}")
+            if state and state.state not in ("unknown", "unavailable"):
+                total += float(state.state)
+        return round(total, 3)
 
 class KotiakkuPowerSensor(KotiakkuSensor):
     """Sensor for Power (kW) measurements."""
@@ -366,78 +345,49 @@ class KotiakkuPriceSensor(KotiakkuSensor):
         return round(float(val), 3)
     
 class KotiakkuEfficiencySensor(KotiakkuSensor):
-    """Calculates battery round-trip efficiency."""
-
+    """Calculates the Round Trip Efficiency (%) of the battery system.
+    
+    Formula: (Total Discharge kWh / Total Charge kWh) * 100
+    """
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_suggested_display_precision = 1
-    _attr_icon = "mdi:chart-gauge"
+    _attr_icon = "mdi:percent"
 
-    def __init__(self, coordinator, key, discharge_key, charge_key, capacity, device_id, device_slug, entry):
+    def __init__(self, coordinator, key, discharge_key, charge_key, device_id, device_slug, entry):
+        """Initialize with keys for discharge and charge energy entities."""
         super().__init__(coordinator, key, device_id, device_slug, entry)
-
         self._discharge_key = discharge_key
         self._charge_key = charge_key
-        self._capacity = float(capacity)
-
-        self._prev_charge = None
-        self._prev_discharge = None
-        self._prev_soc = None
-
-        self._efficiency_avg = None
-        self._alpha = 0.1  # smoothing factor
+        self._device_slug = device_slug
 
     @property
     def native_value(self):
-        data = self.coordinator.data
-        if not data:
+        """Calculate efficiency using the current states of Energy entities."""
+        # Use the slugified entity IDs to pull directly from the HA state machine
+        charge_state = self.hass.states.get(f"sensor.{self._device_slug}_{self._charge_key}")
+        discharge_state = self.hass.states.get(f"sensor.{self._device_slug}_{self._discharge_key}")
+
+        # Guard: If entities aren't ready yet, return None
+        if not charge_state or not discharge_state:
             return None
-
-        charge = data.get(self._charge_key)
-        discharge = data.get(self._discharge_key)
-        soc = data.get("state_of_charge_percent")
-
-        if charge is None or discharge is None or soc is None:
+            
+        try:
+            c = float(charge_state.state)
+            d = float(discharge_state.state)
+            
+            # Avoid Division by Zero if the battery hasn't charged yet
+            if c <= 0:
+                return None
+                
+            # Efficiency calculation
+            efficiency = (d / c) * 100
+            
+            # Cap at 100% to prevent weird spikes if sensors desync
+            return round(min(efficiency, 100.0), 1)
+            
+        except (ValueError, TypeError):
+            # Handles 'unknown' or 'unavailable' strings in the state machine
             return None
-
-        charge = float(charge)
-        discharge = float(discharge)
-        soc = float(soc)
-
-        # First run initialization
-        if self._prev_charge is None:
-            self._prev_charge = charge
-            self._prev_discharge = discharge
-            self._prev_soc = soc
-            return None
-
-        delta_charge = charge - self._prev_charge
-        delta_discharge = discharge - self._prev_discharge
-        delta_soc = soc - self._prev_soc
-
-        self._prev_charge = charge
-        self._prev_discharge = discharge
-        self._prev_soc = soc
-
-        if delta_charge <= 0:
-            return self._efficiency_avg
-
-        delta_stored = self._capacity * (delta_soc / 100.0)
-
-        efficiency = ((delta_discharge + delta_stored) / delta_charge) * 100
-
-        # Clamp unrealistic values
-        efficiency = max(0, min(efficiency, 100))
-
-        # Exponential moving average smoothing
-        if self._efficiency_avg is None:
-            self._efficiency_avg = efficiency
-        else:
-            self._efficiency_avg = (
-                self._alpha * efficiency
-                + (1 - self._alpha) * self._efficiency_avg
-            )
-
-        return round(self._efficiency_avg, 1)
     
 class KotiakkuChargeEfficiencySensor(KotiakkuSensor):
     """Instantaneous battery charge efficiency."""
@@ -445,12 +395,13 @@ class KotiakkuChargeEfficiencySensor(KotiakkuSensor):
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_suggested_display_precision = 1
     _attr_icon = "mdi:battery-charging-70"
+    _attr_translation_key = "battery_charge_efficiency"
 
     @property
     def native_value(self):
         data = self.coordinator.data
         if not data:
-            return None
+            return 0
 
         solar = data.get("solar_to_battery_kw", 0) or 0
         grid = data.get("grid_to_battery_kw", 0) or 0
@@ -475,12 +426,13 @@ class KotiakkuDischargeEfficiencySensor(KotiakkuSensor):
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_suggested_display_precision = 1
     _attr_icon = "mdi:battery-arrow-down"
+    _attr_translation_key = "battery_discharge_efficiency"
 
     @property
     def native_value(self):
         data = self.coordinator.data
         if not data:
-            return None
+            return 0
 
         house = data.get("battery_to_house_kw", 0) or 0
         grid = data.get("battery_to_grid_kw", 0) or 0
@@ -499,11 +451,10 @@ class KotiakkuDischargeEfficiencySensor(KotiakkuSensor):
 
         return round(min(eff, 100), 1)
     
-class KotiakkuBatteryLossSensor(KotiakkuSensor):
+class KotiakkuBatteryLossSensor(KotiakkuPowerSensor):
     """Instantaneous battery conversion loss."""
 
     _attr_device_class = SensorDeviceClass.POWER
-    _attr_native_unit_of_measurement = UnitOfPower.KILO_WATT
     _attr_icon = "mdi:heat-wave"
 
     @property
@@ -519,7 +470,7 @@ class KotiakkuBatteryLossSensor(KotiakkuSensor):
         battery_power = data.get("battery_power_kw")
 
         if battery_power is None:
-            return 0
+            return None
 
         battery_power = float(battery_power)
 
@@ -533,9 +484,12 @@ class KotiakkuBatteryLossSensor(KotiakkuSensor):
             loss = battery_power - delivered
 
         else:
-            return 0.0
+            return 0
 
-        return round(max(loss, 0), 3)
+        val = max(loss, 0)
+        if self._unit_pref == UNIT_W:
+            return round(float(val) * 1000)
+        return round(float(val), 3)
     
 class KotiakkuTimeTargetSensor(KotiakkuSensor):
     """Estimates time remaining to reach a specific SoC target."""
@@ -606,6 +560,7 @@ class KotiakkuNetSavingsRateSensor(KotiakkuSensor):
 
 class KotiakkuCycleCounterSensor(KotiakkuSensor):
     """Calculates total battery cycles (Total Discharge / Rated Capacity)."""
+    _attr_translation_key = "battery_cycle_count"
     _attr_native_unit_of_measurement = "cycles"
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_suggested_display_precision = 2
@@ -617,14 +572,19 @@ class KotiakkuCycleCounterSensor(KotiakkuSensor):
         self._capacity = float(capacity)
 
     @property
+    def suggested_display_precision(self) -> int:
+        return 0
+
+    @property
     def native_value(self):
-        total_discharge_kwh = self.coordinator.data.get(self._discharge_key)
+        discharge_entity = self.entity_id.replace("battery_cycle_count", self._discharge_key)
+        discharge_state = self.hass.states.get(discharge_entity)
         
-        if total_discharge_kwh is None or self._capacity <= 0:
+        if discharge_state is None or discharge_state.state in ("unknown", "unavailable") or self._capacity <= 0:
             return None
-            
-        cycles = float(total_discharge_kwh) / self._capacity
-        return round(cycles, 2)
+        
+        cycles = float(discharge_state.state) / self._capacity
+        return round(cycles, 0)
     
 class KotiakkuBatteryStateSensor(KotiakkuSensor):
     """Shows the current state of the battery."""

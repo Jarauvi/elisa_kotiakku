@@ -63,13 +63,40 @@
       "total_grid_import_kwh": { "name": "Verkosta ostettu kokonaisenergia" },
       "spot_price_cents_per_kwh": { "name": "Pörssisähkön hinta" },
       "battery_efficiency_ratio": { "name": "Akun kokonais­hyötysuhde" },
-      "battery_charge_efficiency": { "name": "Latauksen hyötysuhde" },
-      "battery_discharge_efficiency": { "name": "Purkamisen hyötysuhde" },
+      "battery_charge_efficiency": { 
+        "name": "Latauksen hyötysuhde",
+        "state": {
+          "unknown": "ei lataa",
+          "unavailable": "ei lataa"
+        }
+      },
+      "battery_discharge_efficiency": { 
+        "name": "Purkamisen hyötysuhde",
+        "state": {
+          "unknown": "ei pura",
+          "unavailable": "ei pura"
+        }
+      },
       "battery_loss_kw": { "name": "Akun häviöteho" },
-      "time_to_90_percent": { "name": "Ladattu 90% tasoon" },
-      "time_to_15_percent": { "name": "Purettu 15% tasoon" },
+      "time_to_90_percent": { 
+        "name": "Ladattu 90% tasoon ajassa",
+        "state": {
+          "unknown": "ei lataa",
+          "unavailable": "ei lataa"
+        }
+      },
+      "time_to_15_percent": { 
+        "name": "Purettu 15% tasoon ajassa",
+        "state": {
+          "unknown": "ei pura",
+          "unavailable": "ei pura"
+        }
+      },
       "net_savings_rate": { "name": "Säästöt / tunti" },
-      "battery_cycle_count": { "name": "Akun lataussyklit" },
+      "battery_cycle_count": { 
+        "name": "Akun lataussyklit",
+        "unit_of_measurement": "sykliä"
+      },
       "battery_state": {
         "name": "Akun tila",
         "state": {
