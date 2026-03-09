@@ -493,10 +493,12 @@ class KotiakkuBatteryLossSensor(KotiakkuPowerSensor):
     
 class KotiakkuTimeTargetSensor(KotiakkuSensor):
     """Estimates time remaining to reach a specific SoC target."""
-    _attr_device_class = SensorDeviceClass.DURATION
-    _attr_native_unit_of_measurement = "min" 
     _attr_suggested_display_precision = 0
     _attr_icon = "mdi:clock-outline"
+    _attr_device_class = None
+    _attr_state_class = None 
+    _attr_unit_of_measurement = None
+    _attr_suggested_display_precision = None
 
     def __init__(self, coordinator, key, target_soc, battery_capacity, device_id, device_slug, entry):
         super().__init__(coordinator, key, device_id, device_slug, entry)
@@ -512,10 +514,13 @@ class KotiakkuTimeTargetSensor(KotiakkuSensor):
         current_soc = float(data.get("state_of_charge_percent", 0))
         power_kw = float(data.get("battery_power_kw", 0))
 
+        if abs(current_soc - self._target_soc) < 0.5:
+            return "-"
+
         if (self._target_soc > current_soc and power_kw >= 0) or \
            (self._target_soc < current_soc and power_kw <= 0):
             if abs(current_soc - self._target_soc) < 0.5:
-                return 0
+                return "-"
             
         is_charging = power_kw < 0
         is_discharging = power_kw > 0
@@ -524,17 +529,22 @@ class KotiakkuTimeTargetSensor(KotiakkuSensor):
                            (self._target_soc < current_soc and is_discharging)
 
         if not moving_to_target or abs(power_kw) < 0.05:
-            return 0
+            return "-"
 
         target_energy = self._battery_capacity * (self._target_soc / 100.0)
         current_energy = self._battery_capacity * (current_soc / 100.0)
         energy_diff = abs(target_energy - current_energy)
         
         hours_remaining = energy_diff / abs(power_kw)
-        if hours_remaining is None:
-            return None
-        
-        return round(hours_remaining * 60)
+        if hours_remaining is None or hours_remaining == 0:
+            return "-"
+
+        total_minutes = int(hours_remaining * 60)
+        hours, mins = divmod(total_minutes, 60)
+
+        if hours > 0:
+            return f"{hours}h {mins}m"
+        return f"{mins}m"
 
 class KotiakkuNetSavingsRateSensor(KotiakkuSensor):
     """Real-time net savings rate in €/h (Earnings minus Charging Costs)."""
@@ -561,7 +571,6 @@ class KotiakkuNetSavingsRateSensor(KotiakkuSensor):
 class KotiakkuCycleCounterSensor(KotiakkuSensor):
     """Calculates total battery cycles (Total Discharge / Rated Capacity)."""
     _attr_translation_key = "battery_cycle_count"
-    _attr_native_unit_of_measurement = "cycles"
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_suggested_display_precision = 2
     _attr_icon = "mdi:sync"

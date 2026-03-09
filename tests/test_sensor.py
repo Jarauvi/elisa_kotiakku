@@ -40,7 +40,7 @@ from custom_components.elisa_kotiakku.sensor import (
         (KotiakkuPowerSensor, "solar_power_kw", UnitOfPower.KILO_WATT, SensorDeviceClass.POWER, SensorStateClass.MEASUREMENT),
         (KotiakkuBatterySensor, "state_of_charge_percent", PERCENTAGE, SensorDeviceClass.BATTERY, SensorStateClass.MEASUREMENT),
         (KotiakkuBatteryStateSensor, "battery_state", None, None, None), # String sensor
-        (KotiakkuCycleCounterSensor, "battery_cycle_count", "cycles", None, SensorStateClass.TOTAL_INCREASING),
+        (KotiakkuCycleCounterSensor, "battery_cycle_count", None, None, SensorStateClass.TOTAL_INCREASING),
     ],
 )
 async def test_sensor_metadata(
@@ -106,7 +106,7 @@ async def test_time_target_estimation(hass, mock_coordinator, mock_config_entry)
         "state_of_charge_percent": 50,
         "battery_power_kw": -2.0  # Negative is charging
     }
-    assert sensor.native_value == 120
+    assert sensor.native_value == "2h 0m"
 
 async def test_net_savings_calculation(hass, mock_coordinator, mock_config_entry):
     """Test net savings: (Discharge * Price) - (Grid Charge * Price)."""
@@ -214,7 +214,7 @@ async def test_time_target_zero_power(hass, mock_coordinator, mock_config_entry)
     )
     mock_coordinator.data = {"state_of_charge_percent": 50, "battery_power_kw": 0.0}
     # Should return 0 or None based on your logic, but NOT crash
-    assert sensor.native_value == 0
+    assert sensor.native_value == "-"
 
 async def test_energy_sensor_none_coordination(hass, mock_coordinator, mock_config_entry):
     """Test energy sensor when coordinator data is missing."""
