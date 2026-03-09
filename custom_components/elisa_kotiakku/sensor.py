@@ -83,7 +83,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
         # Energy Sensors (kWh) - Calculated totals using Riemann sum integration
         # These take a Power sensor key as input to calculate the Energy over time
         KotiakkuEnergySensor(coordinator, "solar_energy_kwh", "solar_power_kw", device_id, device_slug, entry),
-        KotiakkuEnergySensor(coordinator, "solar_to_house_kwh", "solar_to_battery_kw", device_id, device_slug, entry),
+        KotiakkuEnergySensor(coordinator, "solar_to_house_kwh", "solar_to_house_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "solar_to_battery_kwh", "solar_to_battery_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "solar_to_grid_kwh", "solar_to_grid_kw", device_id, device_slug, entry),
         KotiakkuEnergySensor(coordinator, "grid_to_house_kwh", "grid_to_house_kw", device_id, device_slug, entry),
