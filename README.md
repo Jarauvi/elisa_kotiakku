@@ -11,7 +11,12 @@
   [![Tests](https://github.com/Jarauvi/elisa_kotiakku/actions/workflows/tests.yaml/badge.svg)](https://github.com/Jarauvi/elisa_kotiakku/actions)
   ![Cloud Polling](https://img.shields.io/badge/IOT_class-Cloud_polling-blue)
 
-  **Integrate your Elisa Kotiakku energy storage system into Home Assistant.** *Monitor solar production, battery health, and real-time energy costs.*
+  **Integrate your Elisa Kotiakku energy storage system into Home Assistant.** *Monitor solar production, battery health, and real-time energy costs.* *Batteries not included*
+
+  **New!** Check out my [elisa_kotiakku_cards](https://github.com/Jarauvi/elisa_kotiakku_cards) repository
+
+  <img src="https://github.com/Jarauvi/elisa_kotiakku/blob/main/images/kotiakku_diagnostics_card.png?raw=true" width="256" height="256">
+  
 </div>
 
 ---
