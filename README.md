@@ -111,7 +111,10 @@
 
 
 ## 🗺️ Roadmap
-- [ ] Add button entities to reset energy counters manually.
+- [ ] migrate calculations from sensors to coordinator
+- [ ] add button entities to reset energy counters manually.
+- [ ] add total savings sensor
+- [ ] add total energy loss sensor
 - [x] add efficiency ratio sensor
 - [x] add cost savings estimation sensor
 - [x] add sensors to estimate when battery is depleted/charged with current usage/charging power
