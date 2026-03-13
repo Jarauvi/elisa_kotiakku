@@ -15,6 +15,7 @@ PLATFORMS: list[Platform] = [
 # These keys match the 'data' keys in your config_flow.py and strings.json
 CONF_API_KEY = "api_key"
 CONF_URL = "url"
+DEFAULT_URL = "https://residential.gridle.com/api/public/measurements"
 CONF_NAME = "name"
 CONF_SCAN_INTERVAL = "scan_interval"
 
@@ -41,3 +42,5 @@ MIN_SCAN_INTERVAL = 300
 # Battery capacity
 CONF_BATTERY_CAPACITY = "battery_capacity"
 DEFAULT_BATTERY_CAPACITY = 21.0
+MIN_BATTERY_CAPACITY = 14.0
+MAX_BATTERY_CAPACITY = 42.0

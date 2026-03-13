@@ -78,9 +78,11 @@
         }
       },
       "battery_loss_kw": { "name": "Akun häviöteho" },
+      "battery_loss_kwh": { "name": "Akun kokonaisenergiahäviö" },
       "time_to_90_percent": { "name": "Ladattu 90% tasoon ajassa" },
       "time_to_15_percent": { "name": "Purettu 15% tasoon ajassa" },
       "net_savings_rate": { "name": "Säästöt / tunti" },
+      "total_savings_eur": { "name": "Kumuloituvat säästöt" },
       "battery_cycle_count": { 
         "name": "Akun lataussyklit",
         "unit_of_measurement": "sykliä"

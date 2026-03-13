@@ -22,7 +22,8 @@ async def async_setup_entry(hass, entry):
     
     # Initialize the CUSTOM coordinator that has the list-unwrapping logic
     coordinator = KotiakkuDataUpdateCoordinator(hass, entry)
-
+    device_slug = entry.data.get("device_slug", "kotiakku")
+    
     # Fetch initial data before finishing setup
     await coordinator.async_config_entry_first_refresh()
     
