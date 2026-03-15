@@ -1,8 +1,7 @@
 """DataUpdateCoordinator for Elisa Kotiakku."""
 
 import logging
-from datetime import timedelta
-import aiohttp
+from datetime import datetime, timedelta, time
 
 from homeassistant.util import dt as dt_util
 from homeassistant.core import HomeAssistant
@@ -10,8 +9,56 @@ from homeassistant.helpers import entity_registry as er
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from .const import DOMAIN, CONF_API_KEY, CONF_URL, DEFAULT_SCAN_INTERVAL, CONF_POWER_UNIT, DEFAULT_POWER_UNIT, UNIT_W, CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY
-
+from .const import (
+    DOMAIN, 
+    CONF_API_KEY, 
+    CONF_URL,
+    DEFAULT_URL,
+    CONF_SCAN_INTERVAL,
+    DEFAULT_SCAN_INTERVAL, 
+    CONF_POWER_UNIT, 
+    DEFAULT_POWER_UNIT, 
+    UNIT_W, 
+    CONF_BATTERY_CAPACITY, 
+    DEFAULT_BATTERY_CAPACITY,
+    CONF_POWER_DECIMALS,
+    SECTION_API_SETTINGS,
+    SECTION_BATTERY_SETTINGS,
+    SECTION_CURRENCY_SETTINGS,
+    CONF_TRANSFER_PRICING,
+    DEFAULT_TRANSFER_PRICING,
+    CONF_FIXED_TRANSFER_PRICE,
+    DEFAULT_FIXED_TRANSFER_PRICE,
+    CONF_TAX_PERCENTAGE,
+    DEFAULT_TAX_PERCENTAGE,
+    CONF_ADD_TAX,
+    DEFAULT_ADD_TAX,
+    CONF_DAY_PRICE,
+    DEFAULT_DAY_PRICE,
+    CONF_DAY_START,
+    DEFAULT_DAY_START,
+    CONF_NIGHT_PRICE,
+    DEFAULT_NIGHT_PRICE,
+    CONF_NIGHT_START,
+    DEFAULT_NIGHT_START,
+    CONF_SUMMER_DAY_PRICE,
+    DEFAULT_SUMMER_DAY_PRICE,
+    CONF_SUMMER_NIGHT_PRICE,
+    DEFAULT_SUMMER_NIGHT_PRICE,
+    CONF_WINTER_DAY_PRICE,
+    DEFAULT_WINTER_DAY_PRICE,
+    CONF_WINTER_NIGHT_PRICE,
+    DEFAULT_WINTER_NIGHT_PRICE,
+    CONF_SUMMER_START_MONTH,
+    DEFAULT_SUMMER_START_MONTH,
+    CONF_WINTER_START_MONTH,
+    DEFAULT_WINTER_START_MONTH,
+    TRANSFER_FIXED,
+    TRANSFER_DAY_NIGHT,
+    TRANSFER_IGNORE,
+    TRANSFER_SEASONAL,
+    get_config_parameter
+)
 _LOGGER = logging.getLogger(__name__)
 
 class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
@@ -21,8 +68,8 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
         """Initialize the coordinator."""
         self.hass = hass
         self.entry = entry
-        self.api_url = entry.data[CONF_URL]
-        self.api_key = entry.data[CONF_API_KEY]
+        self.api_url = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_URL, DEFAULT_URL)
+        self.api_key = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_API_KEY, "")
         self._primed = False
         
         self._solar_energy_kwh = 0.0
@@ -42,7 +89,7 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
         self._last_energy_run = None
         
         # Pull scan interval from config or use default
-        scan_interval = entry.data.get("scan_interval", DEFAULT_SCAN_INTERVAL)
+        scan_interval = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
         super().__init__(
             hass,
@@ -77,10 +124,10 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 if not data:
                     raise UpdateFailed("API returned empty data")
                 
-                power_unit_pref = self.entry.options.get(CONF_POWER_UNIT, self.entry.data.get(CONF_POWER_UNIT, DEFAULT_POWER_UNIT))
+                power_unit_pref = get_config_parameter(self.entry, SECTION_BATTERY_SETTINGS, CONF_POWER_UNIT, DEFAULT_POWER_UNIT)
                 power_display_multiplier = 1000.0 if power_unit_pref == "W" else 1.0
                 data["power_display_unit"] = power_unit_pref
-                data["power_decimals"] = 0 if power_unit_pref == UNIT_W else 3
+                data["power_decimals"] = 0 if power_unit_pref == UNIT_W else CONF_POWER_DECIMALS
                 
                 # Power values
                 power_keys = [
@@ -98,17 +145,17 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 ]
                 for key in power_keys:
                     if key in data:
-                        data[f"{key}_display"] = data[key] * power_display_multiplier 
+                        data[f"{key}_display"] = round(data[key] * power_display_multiplier, data["power_decimals"])
                 
                 # Power sums
                 data["battery_charge_total_kw"] = data.get("solar_to_battery_kw", 0) + data.get("grid_to_battery_kw", 0)
-                data["battery_charge_total_kw_display"] = data.get("solar_to_battery_kw_display", 0) + data.get("grid_to_battery_kw_display", 0)
+                data["battery_charge_total_kw_display"] = round(data.get("solar_to_battery_kw_display", 0) + data.get("grid_to_battery_kw_display", 0), CONF_POWER_DECIMALS)
                 data["battery_discharge_total_kw"] = data.get("battery_to_house_kw", 0) + data.get("battery_to_grid_kw", 0)
-                data["battery_discharge_total_kw_display"] = data.get("battery_to_house_kw_display", 0) + data.get("battery_to_grid_kw_display", 0)
+                data["battery_discharge_total_kw_display"] = round(data.get("battery_to_house_kw_display", 0) + data.get("battery_to_grid_kw_display", 0), CONF_POWER_DECIMALS)
                 data["total_grid_import_kw"] = data.get("grid_to_house_kw", 0) + data.get("grid_to_battery_kw", 0)
-                data["total_grid_import_kw_display"] = data.get("total_grid_import_kw", 0) * power_display_multiplier 
+                data["total_grid_import_kw_display"] = round(data.get("total_grid_import_kw", 0) * power_display_multiplier, CONF_POWER_DECIMALS)
                 data["total_grid_export_kw"] = data.get("battery_to_grid_kw", 0) + data.get("solar_to_grid_kw", 0)
-                data["total_grid_export_kw_display"] = data.get("total_grid_export_kw", 0) * power_display_multiplier 
+                data["total_grid_export_kw_display"] = round(data.get("total_grid_export_kw", 0) * power_display_multiplier, CONF_POWER_DECIMALS)
                               
                 # Loss power
                 battery_power = data.get("battery_power_kw", 0)
@@ -123,7 +170,7 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                     loss = battery_power - delivered
                 
                 data["battery_loss_kw"] = max(loss, 0)
-                data["battery_loss_kw_display"] = data.get("battery_loss_kw", 0) * power_display_multiplier 
+                data["battery_loss_kw_display"] = round(data.get("battery_loss_kw", 0) * power_display_multiplier)
                 
                 # Costs
                 price_eur_kwh = data.get("spot_price_cents_per_kwh", 0) / 100
@@ -158,7 +205,7 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 data["battery_discharge_efficiency"] = round(min(eff, 100), 1)
                     
                 # Time-to-target sensors
-                battery_capacity = self.entry.options.get(CONF_BATTERY_CAPACITY, self.entry.data.get(CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY))
+                battery_capacity = get_config_parameter(self.entry, SECTION_BATTERY_SETTINGS, CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY)
 
                 # Time to 90% charge
                 data["time_to_90_percent"] = self.calculate_target_time(
@@ -215,3 +262,47 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
         if hours > 0:
             return f"{hours}h {mins}m"
         return f"{mins}m"
+
+    def get_transfer_fee(self, entry):
+        mode = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_TRANSFER_PRICING, DEFAULT_TRANSFER_PRICING)
+        now = datetime.now()
+        current_time = now.time()
+        current_month = now.month
+
+        if mode == TRANSFER_FIXED:
+            return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_FIXED_TRANSFER_PRICE, DEFAULT_FIXED_TRANSFER_PRICE)
+
+        if mode == TRANSFER_DAY_NIGHT:
+            day_start = datetime.strptime(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_START, DEFAULT_DAY_START), "%H:%M:%S").time()
+            night_start = datetime.strptime(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_NIGHT_START, DEFAULT_NIGHT_START), "%H:%M:%S").time()
+
+            if self.is_within_time_range(current_time, day_start, night_start):
+                return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_PRICE, DEFAULT_DAY_PRICE)
+            return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_NIGHT_PRICE, DEFAULT_NIGHT_PRICE)
+
+        if mode == TRANSFER_SEASONAL:
+            winter_start = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_START_MONTH, DEFAULT_WINTER_START_MONTH)
+            summer_start = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_START_MONTH, DEFAULT_SUMMER_START_MONTH)
+            day_start = datetime.strptime(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_START, DEFAULT_DAY_START), "%H:%M:%S").time()
+            night_start = datetime.strptime(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_NIGHT_START, DEFAULT_NIGHT_START), "%H:%M:%S").time()
+
+            is_winter = current_month >= winter_start or current_month < summer_start
+            is_day = self.is_within_time_range(current_time, day_start, night_start)
+
+            if is_winter:
+                if is_day:
+                    return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_DAY_PRICE, DEFAULT_WINTER_DAY_PRICE)
+                return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_NIGHT_PRICE, DEFAULT_WINTER_NIGHT_PRICE)
+            if is_day:
+                get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_DAY_PRICE, DEFAULT_SUMMER_DAY_PRICE)
+            get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_NIGHT_PRICE, DEFAULT_SUMMER_NIGHT_PRICE)
+
+        return 0.0
+
+    def is_within_time_range(self, current_time, start_time, end_time):
+        """Check if current time is within a range, handling midnight wrap-around."""
+        
+        if start_time <= end_time:
+            return start_time <= current_time < end_time
+        else:
+            return current_time >= start_time or current_time < end_time

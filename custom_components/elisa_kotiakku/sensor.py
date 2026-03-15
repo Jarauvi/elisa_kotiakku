@@ -19,7 +19,20 @@ from homeassistant.const import UnitOfTime
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import slugify
-from .const import DOMAIN, MANUFACTURER, MODEL, CONF_NAME, DEFAULT_NAME, CONF_POWER_UNIT, DEFAULT_POWER_UNIT, UNIT_W, CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY
+from .const import (
+    DOMAIN, 
+    MANUFACTURER, 
+    MODEL, 
+    CONF_NAME, 
+    DEFAULT_NAME, 
+    CONF_POWER_UNIT, 
+    DEFAULT_POWER_UNIT, 
+    UNIT_W, 
+    CONF_BATTERY_CAPACITY, 
+    DEFAULT_BATTERY_CAPACITY,
+    SECTION_BATTERY_SETTINGS,
+    get_config_parameter
+)
 
 # Mapping of sensor keys to Material Design Icons (MDI)
 # If a key is not here or set to None, HA will fall back to DeviceClass defaults
@@ -70,10 +83,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id]
     
     # Identify the device - using entry.title (set during config) or defaults
-    device_id = entry.title or entry.data.get(CONF_NAME, DEFAULT_NAME)
+    device_id = entry.title or get_config_parameter(entry, SECTION_BATTERY_SETTINGS, CONF_NAME, DEFAULT_NAME)
     device_slug = slugify(device_id)
-    battery_capacity = entry.options.get(CONF_BATTERY_CAPACITY, entry.data.get(CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY))
-
+    battery_capacity = get_config_parameter(entry, SECTION_BATTERY_SETTINGS, CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY)
+    
     sensors = [
         # Power Sensors (kW) - Instantaneous flow measurements
         KotiakkuPowerSensor(coordinator, "battery_power_kw", device_id, device_slug, entry),
@@ -208,7 +221,7 @@ class KotiakkuSensor(CoordinatorEntity, SensorEntity):
     def _unit_pref(self):
         return self._entry.options.get(
             CONF_POWER_UNIT, 
-            self._entry.data.get(CONF_POWER_UNIT, DEFAULT_POWER_UNIT)
+            get_config_parameter(self._entry, SECTION_BATTERY_SETTINGS, CONF_POWER_UNIT, DEFAULT_POWER_UNIT)
         )
 
 class KotiakkuEnergySensor(RestoreEntity, KotiakkuSensor):

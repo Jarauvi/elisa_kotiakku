@@ -12,7 +12,25 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from .coordinator import KotiakkuDataUpdateCoordinator
-from .const import DOMAIN, PLATFORMS, CONF_API_KEY, CONF_URL, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import (
+    DOMAIN, 
+    PLATFORMS,
+    CONF_NAME, 
+    CONF_API_KEY, 
+    CONF_URL, 
+    CONF_SCAN_INTERVAL,
+    CONF_POWER_UNIT,
+    CONF_BATTERY_CAPACITY, 
+    CONF_ADD_TAX,
+    CONF_TAX_PERCENTAGE,
+    CONF_TRANSFER_PRICING,
+    DEFAULT_ADD_TAX,
+    DEFAULT_TAX_PERCENTAGE,
+    DEFAULT_TRANSFER_PRICING,
+    SECTION_BATTERY_SETTINGS,
+    SECTION_API_SETTINGS,
+    SECTION_CURRENCY_SETTINGS
+)
 
 # Define the logger for this integration using the module name
 _LOGGER = logging.getLogger(__name__)
@@ -57,6 +75,36 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data.pop(DOMAIN)
 
     return unload_ok
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old config entries."""
+    _LOGGER.debug("Migrating config entry from version %s", config_entry.version)
+
+    if config_entry.version == 1:
+        new_data = {
+            SECTION_API_SETTINGS: {
+                CONF_URL: config_entry.data[CONF_URL],
+                CONF_API_KEY: config_entry.data[CONF_API_KEY],
+                CONF_SCAN_INTERVAL: config_entry.data[CONF_SCAN_INTERVAL],
+            },
+            SECTION_BATTERY_SETTINGS: {
+                CONF_NAME: config_entry.data[CONF_NAME],
+                CONF_POWER_UNIT: config_entry.data[CONF_POWER_UNIT],
+                CONF_BATTERY_CAPACITY: config_entry.data[CONF_BATTERY_CAPACITY],
+            }
+        }
+        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_ADD_TAX, False)
+        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_TRANSFER_PRICING, "ignore")
+
+        hass.config_entries.async_update_entry(
+            config_entry,
+            data=new_data,
+            version=2,
+        )
+
+        _LOGGER.info("Migration to version 2 successful")
+
+    return True
 
 async def update_listener(hass, entry):
     """

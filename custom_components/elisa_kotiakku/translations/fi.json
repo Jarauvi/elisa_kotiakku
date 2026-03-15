@@ -4,20 +4,86 @@
       "user": {
         "title": "Elisa Kotiakku määritys",
         "description": "Integraation määritys",
+        "sections": {
+          "api_settings": {
+            "name": "API:n asetukset",
+            "description": "API:n yhteysasetukset ja autentikointi",
+            "data": {
+              "url": "Rajapinnan URL",
+              "api_key": "API-avain",
+              "scan_interval": "Päivitysväli (sekuntia)"
+            }
+          },
+          "battery_settings": {
+            "name": "Akun asetukset",
+            "description": "Akun konfiguraatio",
+            "data": {
+              "name": "Laitteen nimi",
+              "power_unit": "Tehon yksikkö",
+              "battery_capacity": "Akun kapasiteetti (kWh)"
+            }
+          },
+          "currency_settings": {
+            "name": "Säästömittausten asetukset",
+            "description": "Asetukset säästöjen laskentaa varten",
+            "data": {
+              "add_tax": "Lisää hintoihin vero",
+              "tax_percentage": "Vero (%)",
+              "transfer_pricing": "Sähkönsiirto"
+            }
+          }
+        },
         "data": {
-          "name": "Laitteen nimi",
-          "url": "Rajapinnan URL",
-          "api_key": "API-avain",
-          "power_unit": "Tehon yksikkö",
-          "scan_interval": "Päivitysväli (sekuntia)",
-          "battery_capacity": "Akun kapasiteetti (kWh)"
+        }
+      },
+      "fixed_transfer": {
+        "title": "Kiinteä sähkönsiirton hinta",
+        "description": "Kiinteän siirtohinnan asetukset",
+        "data": {
+          "transfer_price": "Kiinteä siirtohinta (c/kWh)"
+        }
+      },
+      "day_night_transfer": {
+        "title": "Yösähkön hinta",
+        "description": "Dynaamisen päivä/yö siirtohinnan asetukset",
+        "data": {
+          "day_start": "Päivähintojen aloitusaika",
+          "night_start": "Yöhintojen aloitusaika",
+          "day_price": "Päivähinta (snt/kWh)",
+          "night_price": "Yöhinta (snt(kWh)"
+        }
+      },
+      "seasonal_transfer": {
+        "title": "Kausisähkön hinta",
+        "description": "Kesä/talvikauden siirtohinnan asetukset",
+        "data": {
+          "winter_start_month": "Talvikauden aloituskuukausi",
+          "summer_start_month": "Kesäkauden aloituskuukausi",
+          "day_start": "Päivähintojen aloitusaika",
+          "night_start": "Yöhintojen aloitusaika",
+          "winter_day_price": "Talvipäivän hinta (snt/kWh)",
+          "winter_night_price": "Talviyön hinta (snt/kWh)",
+          "summer_day_price": "Kesäpäivän hinta (snt/kWh)",
+          "summer_night_price": "Kesäyön hinta (snt/kWh)"
         }
       }
     },
     "error": {
       "cannot_connect": "Yhteys palvelimeen epäonnistui. Tarkista URL",
       "invalid_auth": "Virheellinen API-avain",
-      "unknown": "Tuntematon virhe tapahtui"
+      "unknown": "Tuntematon virhe tapahtui",
+      "device_already_configured": "Laite on jo lisätty",
+      "api_already_configured": "API avain on jo käytössä"
+    }
+  },
+  "selector": {
+    "transfer_pricing": {
+      "options": {
+        "ignore_transfer": "Älä huomioi siirtohintaa",
+        "fixed_transfer": "Kiinteä siirtohinta",
+        "seasonal_transfer": "Kausisähkö",
+        "day_night_transfer": "Yösähkö"
+      }
     }
   },
   "options": {
@@ -25,12 +91,76 @@
       "init": {
         "title": "Elisa Kotiakku määritys",
         "description": "Integraation määritys",
+        "sections": {
+          "api_settings": {
+            "name": "API:n asetukset",
+            "description": "API:n yhteysasetukset ja autentikointi",
+            "data": {
+              "url": "Rajapinnan URL",
+              "api_key": "API-avain",
+              "scan_interval": "Päivitysväli (sekuntia)"
+            }
+          },
+          "battery_settings": {
+            "name": "Akun asetukset",
+            "description": "Akun konfiguraatio",
+            "data": {
+              "name": "Laitteen nimi",
+              "power_unit": "Tehon yksikkö",
+              "battery_capacity": "Akun kapasiteetti (kWh)"
+            }
+          },
+          "currency_settings": {
+            "name": "Säästömittausten asetukset",
+            "description": "Asetukset säästöjen laskentaa varten",
+            "data": {
+              "add_tax": "Lisää hintoihin vero",
+              "tax_percentage": "Vero (%)",
+              "transfer_pricing": "Sähkönsiirto"
+            }
+          }
+        },
         "data": {
-          "power_unit": "Tehon yksikkö",
-          "scan_interval": "Päivitysväli (sekuntia)",
-          "battery_capacity": "Akun kapasiteetti (kWh)"
+        }
+      },
+      "fixed_transfer": {
+        "title": "Kiinteä sähkönsiirton hinta",
+        "description": "Kiinteän siirtohinnan asetukset",
+        "data": {
+          "transfer_price": "Kiinteä siirtohinta (c/kWh)"
+        }
+      },
+      "day_night_transfer": {
+        "title": "Yösähkön hinta",
+        "description": "Dynaamisen päivä/yö siirtohinnan asetukset",
+        "data": {
+          "day_start": "Päivähintojen aloitusaika",
+          "night_start": "Yöhintojen aloitusaika",
+          "day_price": "Päivähinta (snt/kWh)",
+          "night_price": "Yöhinta (snt(kWh)"
+        }
+      },
+      "seasonal_transfer": {
+        "title": "Kausisähkön hinta",
+        "description": "Kesä/talvikauden siirtohinnan asetukset",
+        "data": {
+          "winter_start_month": "Talvikauden aloituskuukausi",
+          "summer_start_month": "Kesäkauden aloituskuukausi",
+          "day_start": "Päivähintojen aloitusaika",
+          "night_start": "Yöhintojen aloitusaika",
+          "winter_day_price": "Talvipäivän hinta (snt/kWh)",
+          "winter_night_price": "Talviyön hinta (snt/kWh)",
+          "summer_day_price": "Kesäpäivän hinta (snt/kWh)",
+          "summer_night_price": "Kesäyön hinta (snt/kWh)"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Yhteys palvelimeen epäonnistui. Tarkista URL",
+      "invalid_auth": "Virheellinen API-avain",
+      "unknown": "Tuntematon virhe tapahtui",
+      "device_already_configured": "Laite on jo lisätty",
+      "api_already_configured": "API-avain on jo käytössä"
     }
   },
   "entity": {

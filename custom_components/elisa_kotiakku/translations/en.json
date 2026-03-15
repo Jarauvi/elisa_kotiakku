@@ -4,19 +4,84 @@
       "user": {
         "title": "Elisa Kotiakku Configuration",
         "description": "API Configuration",
+        "sections": {
+          "api_settings": {
+            "name": "API settings",
+            "description": "Settings for API connection",
+            "data": {
+              "url": "API URL",
+              "api_key": "API Key",
+              "scan_interval": "Update Interval (seconds)"
+            }
+          },
+          "battery_settings": {
+            "name": "Battery settings",
+            "description": "Settings for battery configuration",
+            "data": {
+              "name": "Device Name",
+              "power_unit": "Power unit",
+              "battery_capacity": "Battery capacity (kWh)"
+            }
+          },
+          "currency_settings": {
+            "name": "Currency settings",
+            "description": "Settings for savings estimations",
+            "data": {
+              "add_tax": "Add tax",
+              "tax_percentage": "Tax (%)",
+              "transfer_pricing": "Energy transfer price"
+            }
+          }
+        }
+      },
+      "fixed_transfer": {
+        "title": "Fixed tariff",
+        "description": "Fixed transfer price settings",
         "data": {
-          "name": "Device Name",
-          "url": "API URL",
-          "api_key": "API Key",
-          "power_unit": "Tehon yksikkö",
-          "scan_interval": "Update Interval (seconds)"
+          "transfer_price": "Fixed transfer price (c/kWh)"
+        }
+      },
+      "day_night_transfer": {
+        "title": "Day / Night tariff",
+        "description": "Transfer price is dynamic day/night based",
+        "data": {
+          "day_start": "Start time for day price",
+          "night_start": "Start time for day night",
+          "day_price": "Price of day transfer (c/kWh)",
+          "night_price": "Price of night transfer (c/kWh)"
+        }
+      },
+      "seasonal_transfer": {
+        "title": "Seasonal tariff",
+        "description": "Transfer price is dynamic season based",
+        "data": {
+          "winter_start_month": "Winter season start month",
+          "summer_start_month": "Summer season start month",
+          "day_start": "Start time for day price",
+          "night_start": "Start time for night price",
+          "winter_day_price": "Price of winter day price (c/kWh)",
+          "winter_night_price": "Price of winter night price (c/kWh)",
+          "summer_day_price": "Price of summer day price (c/kWh)",
+          "summer_night_price": "Price of summer night price (c/kWh)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect to the server. Check the URL",
-      "invalid_auth": "Invalid API Key",
-      "unknown": "An unknown error occurred"
+      "cannot_connect": "Connection to server was failed. Check URL",
+      "invalid_auth": "API key was denied",
+      "unknown": "Unknown error occurred",
+      "device_already_configured": "The device already exists",
+      "api_already_configured": "API key is already used"
+    }
+  },
+  "selector": {
+    "transfer_pricing": {
+      "options": {
+        "ignore_transfer": "Ignore transfer price",
+        "fixed_transfer": "Fixed transfer price",
+        "seasonal_transfer": "Seasonal tariff",
+        "day_night_transfer": "Day/Night tariff"
+      }
     }
   },
   "options": {
@@ -24,12 +89,74 @@
       "init": {
         "title": "Elisa Kotiakku Reconfiguration",
         "description": "API Configuration",
+        "sections": {
+          "api_settings": {
+            "name": "API settings",
+            "description": "Settings for API connection",
+            "data": {
+              "url": "API URL",
+              "api_key": "API Key",
+              "scan_interval": "Update Interval (seconds)"
+            }
+          },
+          "battery_settings": {
+            "name": "Battery settings",
+            "description": "Settings for battery configuration",
+            "data": {
+              "name": "Device Name",
+              "power_unit": "Power unit",
+              "battery_capacity": "Battery capacity (kWh)"
+            }
+          },
+          "currency_settings": {
+            "name": "Currency settings",
+            "description": "Settings for savings estimations",
+            "data": {
+              "add_tax": "Add tax",
+              "tax_percentage": "Tax (%)",
+              "transfer_pricing": "Energy transfer price"
+            }
+          }
+        }
+      },
+      "fixed_transfer": {
+        "title": "Fixed tariff",
+        "description": "Fixed transfer price settings",
         "data": {
-          "power_unit": "Power unit",
-          "scan_interval": "Update Interval (seconds)",
-          "battery_capacity": "Battery capacity (kWh)"
+          "transfer_price": "Fixed transfer price (c/kWh)"
+        }
+      },
+      "day_night_transfer": {
+        "title": "Day / Night tariff",
+        "description": "Transfer price is dynamic day/night based",
+        "data": {
+          "day_start": "Start time for day price",
+          "night_start": "Start time for day night",
+          "day_price": "Price of day transfer (c/kWh)",
+          "night_price": "Price of night transfer (c/kWh)"
+        }
+      },
+      "seasonal_transfer": {
+        "title": "Seasonal tariff",
+        "description": "Transfer price is dynamic season based",
+        "data": {
+          "winter_start_month": "Winter season start month",
+          "summer_start_month": "Summer season start month",
+          "day_start": "Start time for day price",
+          "night_start": "Start time for night price",
+          "winter_day_price": "Price of winter day price (c/kWh)",
+          "winter_night_price": "Price of winter night price (c/kWh)",
+          "summer_day_price": "Price of summer day price (c/kWh)",
+          "summer_night_price": "Price of summer night price (c/kWh)"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "Connection to server was failed. Check URL",
+      "invalid_auth": "API key was denied",
+      "unknown": "Unknown error occurred",
+      "device_already_configured": "The device already exists",
+      "api_already_configured": "API key is already used"
     }
   },
   "entity": {
