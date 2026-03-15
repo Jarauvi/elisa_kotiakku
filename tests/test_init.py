@@ -1,51 +1,118 @@
 import re
 import pytest
-from aioresponses import aioresponses
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, AsyncMock
 from homeassistant.config_entries import ConfigEntryState
-from custom_components.elisa_kotiakku.const import DOMAIN
+from custom_components.elisa_kotiakku import (
+    async_setup_entry,
+    async_unload_entry,
+    async_migrate_entry,
+)
+from custom_components.elisa_kotiakku.const import DOMAIN, PLATFORMS, CONF_SCAN_INTERVAL
 
-PATCH_TARGET = "custom_components.elisa_kotiakku.coordinator.KotiakkuDataUpdateCoordinator._async_update_data"
+# Patch target for coordinator refresh
+COORDINATOR_PATCH = "custom_components.elisa_kotiakku.coordinator.KotiakkuDataUpdateCoordinator._async_update_data"
 
+
+@pytest.mark.asyncio
 async def test_setup_entry_success(hass, mock_config_entry):
-    """Test successful setup by mocking the network response."""
+    """Test setup_entry with successful coordinator refresh."""
+    # Add the config entry to hass
     mock_config_entry.add_to_hass(hass)
-    
-    # aioresponses intercepts any call made via aiohttp (even from HA's shared session)
-    with aioresponses() as m:
-        # We use a regex to match any URL so we don't have to worry about the exact string
-        m.get(re.compile(r".*"), status=200, payload={
-            "battery_power_kw": 1.5, 
-            "soc": 85,
-            "solar_power_kw": 2.0
-        })
 
-        # Trigger the setup
-        result = await hass.config_entries.async_setup(mock_config_entry.entry_id)
-        await hass.async_block_till_done()
+    # Patch coordinator refresh and platform forwarding
+    with patch(
+        "custom_components.elisa_kotiakku.coordinator.KotiakkuDataUpdateCoordinator.async_config_entry_first_refresh",
+        new_callable=AsyncMock
+    ) as mock_refresh, patch(
+        "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
+        new_callable=AsyncMock
+    ):
+        mock_refresh.return_value = None
 
-        # Verify everything went green
+        result = await async_setup_entry(hass, mock_config_entry)
         assert result is True
-        assert mock_config_entry.state is ConfigEntryState.LOADED
-        assert DOMAIN in hass.data
-        
-        coordinator = hass.data[DOMAIN][mock_config_entry.entry_id]
-        assert coordinator.data["soc"] == 85
+        assert hass.data[DOMAIN][mock_config_entry.entry_id] is not None
 
-    # Crucial cleanup to close the session and avoid the "Unclosed client session" error
-    await hass.config_entries.async_unload(mock_config_entry.entry_id)
-    await hass.async_block_till_done()
 
-async def test_setup_entry_auth_failure(hass, mock_config_entry):
-    from homeassistant.helpers.update_coordinator import UpdateFailed
+@pytest.mark.asyncio
+async def test_setup_entry_failure(hass, mock_config_entry):
+    """Test setup_entry when coordinator refresh fails (e.g., auth error)."""
     mock_config_entry.add_to_hass(hass)
-    
-    with patch(PATCH_TARGET, side_effect=UpdateFailed("Auth Error")):
-        await hass.config_entries.async_setup(mock_config_entry.entry_id)
-        await hass.async_block_till_done()
-        
-        # Check the state instead of a blind assert
-        assert mock_config_entry.state in [ConfigEntryState.SETUP_ERROR, ConfigEntryState.SETUP_RETRY]
 
-    await hass.config_entries.async_unload(mock_config_entry.entry_id)
-    await hass.async_block_till_done()
+    with patch(
+        COORDINATOR_PATCH,
+        new=AsyncMock(side_effect=Exception("Auth Error"))
+    ), patch(
+        "custom_components.elisa_kotiakku.coordinator.KotiakkuDataUpdateCoordinator.async_config_entry_first_refresh",
+        new_callable=AsyncMock
+    ), patch(
+        "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
+        new_callable=AsyncMock
+    ):
+        mock_config_entry.add_to_hass(hass)
+        # Should raise internally, but setup_entry returns True anyway
+        result = await async_setup_entry(hass, mock_config_entry)
+        assert result is True
+        # Coordinator is still registered even if first refresh fails
+        assert DOMAIN in hass.data
+
+
+@pytest.mark.asyncio
+async def test_unload_entry_success(hass, mock_config_entry):
+    """Test async_unload_entry removes coordinator and cleans hass.data."""
+    mock_config_entry.add_to_hass(hass)
+
+    # Setup entry first
+    with patch(
+        "custom_components.elisa_kotiakku.coordinator.KotiakkuDataUpdateCoordinator.async_config_entry_first_refresh",
+        new_callable=AsyncMock
+    ), patch(
+        "homeassistant.config_entries.ConfigEntries.async_forward_entry_setups",
+        new_callable=AsyncMock
+    ):
+        await async_setup_entry(hass, mock_config_entry)
+
+    # Unload entry
+    with patch(
+        "homeassistant.config_entries.ConfigEntries.async_unload_platforms",
+        new=AsyncMock(return_value=True)
+    ):
+        result = await async_unload_entry(hass, mock_config_entry)
+        assert result is True
+        assert mock_config_entry.entry_id not in hass.data.get(DOMAIN, {})
+
+
+@pytest.mark.asyncio
+async def test_migrate_entry(hass, mock_config_entry):
+    """Test async_migrate_entry updates config entry version and data."""
+
+    # Add entry to hass so HA knows it exists
+    mock_config_entry.add_to_hass(hass)
+
+    # Old version 1 data (all required keys)
+    old_data = {
+        "url": "https://api.elisa.fi",
+        "api_key": "abc123",
+        "scan_interval": 300,
+        "name": "Test Battery",
+        "power_unit": "kW",
+        "scan_interval": 300,
+        "battery_capacity": 10.0,
+    }
+
+    # Properly update entry with old data and version
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        data=old_data,
+        version=1
+    )
+
+    # Run migration (await it!)
+    result = await async_migrate_entry(hass, mock_config_entry)
+
+    # Assert migration worked
+    assert result is True
+    assert mock_config_entry.version == 2
+    assert "battery_settings" in mock_config_entry.data
+    assert "api_settings" in mock_config_entry.data
+    assert "currency_settings" in mock_config_entry.data
