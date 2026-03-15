@@ -40,7 +40,11 @@
         "title": "Kiinteä sähkönsiirton hinta",
         "description": "Kiinteän siirtohinnan asetukset",
         "data": {
-          "transfer_price": "Kiinteä siirtohinta (c/kWh)"
+          "transfer_price": "Kiinteä siirtohinta (c/kWh)",
+          "add_export_transfer_fee": "Lisää hintoihin tuotannon siirtomaksu",
+          "export_transfer_fee": "Tuotannon siirtomaksu (c/kWh)",
+          "add_electricity_tax": "Lisää hintoihin sähkövero",
+          "electricity_tax": "Sähkövero (c/kWh)"
         }
       },
       "day_night_transfer": {
@@ -50,7 +54,11 @@
           "day_start": "Päivähintojen aloitusaika",
           "night_start": "Yöhintojen aloitusaika",
           "day_price": "Päivähinta (snt/kWh)",
-          "night_price": "Yöhinta (snt(kWh)"
+          "night_price": "Yöhinta (snt(kWh)",
+          "add_electricity_tax": "Lisää hintoihin sähkövero",
+          "electricity_tax": "Sähkövero (c/kWh)",
+          "add_export_transfer_fee": "Lisää hintoihin tuotannon siirtomaksu",
+          "export_transfer_fee": "Tuotannon siirtomaksu (c/kWh)"
         }
       },
       "seasonal_transfer": {
@@ -62,9 +70,13 @@
           "day_start": "Päivähintojen aloitusaika",
           "night_start": "Yöhintojen aloitusaika",
           "winter_day_price": "Talvipäivän hinta (snt/kWh)",
-          "winter_night_price": "Talviyön hinta (snt/kWh)",
-          "summer_day_price": "Kesäpäivän hinta (snt/kWh)",
-          "summer_night_price": "Kesäyön hinta (snt/kWh)"
+          "other_price": "Muu kuin talvipäivä (snt/kWh)",
+          "cheaper_sunday_rate": "Käytä talven halvempia sunnuntaihintoja",
+          "cheaper_holiday_rate": "Käytä halvempia arkipyhien hintoja",
+          "add_electricity_tax": "Lisää hintoihin sähkövero",
+          "electricity_tax": "Sähkövero (c/kWh)",
+          "add_export_transfer_fee": "Lisää hintoihin tuotannon siirtomaksu",
+          "export_transfer_fee": "Tuotannon siirtomaksu (c/kWh)"
         }
       }
     },
@@ -127,7 +139,11 @@
         "title": "Kiinteä sähkönsiirton hinta",
         "description": "Kiinteän siirtohinnan asetukset",
         "data": {
-          "transfer_price": "Kiinteä siirtohinta (c/kWh)"
+          "transfer_price": "Kiinteä siirtohinta (c/kWh)",
+          "add_export_transfer_fee": "Lisää hintoihin tuotannon siirtomaksu",
+          "export_transfer_fee": "Tuotannon siirtomaksu (c/kWh)",
+          "add_electricity_tax": "Lisää hintoihin sähkövero",
+          "electricity_tax": "Sähkövero (c/kWh)"
         }
       },
       "day_night_transfer": {
@@ -137,7 +153,11 @@
           "day_start": "Päivähintojen aloitusaika",
           "night_start": "Yöhintojen aloitusaika",
           "day_price": "Päivähinta (snt/kWh)",
-          "night_price": "Yöhinta (snt(kWh)"
+          "night_price": "Yöhinta (snt(kWh)",
+          "add_electricity_tax": "Lisää hintoihin sähkövero",
+          "electricity_tax": "Sähkövero (c/kWh)",
+          "add_export_transfer_fee": "Lisää hintoihin tuotannon siirtomaksu",
+          "export_transfer_fee": "Tuotannon siirtomaksu (c/kWh)"
         }
       },
       "seasonal_transfer": {
@@ -149,9 +169,13 @@
           "day_start": "Päivähintojen aloitusaika",
           "night_start": "Yöhintojen aloitusaika",
           "winter_day_price": "Talvipäivän hinta (snt/kWh)",
-          "winter_night_price": "Talviyön hinta (snt/kWh)",
-          "summer_day_price": "Kesäpäivän hinta (snt/kWh)",
-          "summer_night_price": "Kesäyön hinta (snt/kWh)"
+          "other_price": "Muu kuin talvipäivä (snt/kWh)",
+          "cheaper_sunday_rate": "Käytä talven halvempia sunnuntaihintoja",
+          "cheaper_holiday_rate": "Käytä halvempia arkipyhien hintoja",
+          "add_electricity_tax": "Lisää hintoihin sähkövero",
+          "electricity_tax": "Sähkövero (c/kWh)",
+          "add_export_transfer_fee": "Lisää hintoihin tuotannon siirtomaksu",
+          "export_transfer_fee": "Tuotannon siirtomaksu (c/kWh)"
         }
       }
     },

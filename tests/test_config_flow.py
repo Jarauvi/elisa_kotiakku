@@ -11,7 +11,7 @@ from aioresponses import aioresponses
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
 
-from custom_components.elisa_kotiakku.config_flow import validate_api_key
+from custom_components.elisa_kotiakku.config_flow import validate
 from custom_components.elisa_kotiakku.const import (
     DOMAIN, 
     CONF_POWER_UNIT, 
@@ -102,7 +102,7 @@ async def test_validate_input_success(hass: HomeAssistant):
     
     with aioresponses() as mock:
         mock.get(data[CONF_URL], status=200)
-        result = await validate_api_key(hass, data)
+        result = await validate(hass, data)
         assert result is None
 
 async def test_validate_input_invalid_auth(hass: HomeAssistant):
@@ -111,7 +111,7 @@ async def test_validate_input_invalid_auth(hass: HomeAssistant):
     
     with aioresponses() as mock:
         mock.get(data[CONF_URL], status=401)
-        result = await validate_api_key(hass, data)
+        result = await validate(hass, data)
         assert result == "invalid_auth"
 
 async def test_validate_input_cannot_connect(hass: HomeAssistant):
@@ -121,5 +121,5 @@ async def test_validate_input_cannot_connect(hass: HomeAssistant):
     with aioresponses() as mock:
         # Simulate a generic server-side error (500)
         mock.get(data[CONF_URL], status=500)
-        result = await validate_api_key(hass, data)
+        result = await validate(hass, data)
         assert result == "cannot_connect"

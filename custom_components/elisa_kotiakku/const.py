@@ -40,10 +40,10 @@ DEFAULT_NAME = "Kotiakku"
 
 # === CURRENCY ===
 SECTION_CURRENCY_SETTINGS = "currency_settings"
-CONF_ADD_TAX = "add_tax"
-DEFAULT_ADD_TAX = False
-CONF_TAX_PERCENTAGE = "tax_percentage"
-DEFAULT_TAX_PERCENTAGE = 25.5
+CONF_ADD_VAT = "add_tax"
+DEFAULT_ADD_VAT = False
+CONF_VAT_PERCENTAGE = "tax_percentage"
+DEFAULT_VAT_PERCENTAGE = 25.5
 CONF_TRANSFER_PRICING = "transfer_pricing"
 TRANSFER_IGNORE = "ignore_transfer"
 TRANSFER_FIXED = "fixed_transfer"
@@ -66,12 +66,20 @@ CONF_SUMMER_START_MONTH = "summer_start_month"
 DEFAULT_SUMMER_START_MONTH = 5
 CONF_WINTER_DAY_PRICE = "winter_day_price"
 DEFAULT_WINTER_DAY_PRICE = 7.0
-CONF_WINTER_NIGHT_PRICE = "winter_night_price"
-DEFAULT_WINTER_NIGHT_PRICE = 5.0
-CONF_SUMMER_DAY_PRICE = "summer_day_price"
-DEFAULT_SUMMER_DAY_PRICE = 7.0
-CONF_SUMMER_NIGHT_PRICE = "summer_night_price"
-DEFAULT_SUMMER_NIGHT_PRICE = 5.0
+CONF_OTHER_PRICE = "other_price"
+DEFAULT_OTHER_PRICE = 5.0
+CONF_ADD_EXPORT_TRANSFER_FEE = "add_export_transfer_fee"
+DEFAULT_ADD_EXPORT_TRANSFER_FEE = False
+CONF_EXPORT_TRANSFER_FEE = "export_transfer_fee"
+DEFAULT_EXPORT_TRANSFER_FEE = 0.07
+CONF_ADD_ELECTRICITY_TAX = "add_electricity_tax"
+DEFAULT_ADD_ELECTRICITY_TAX = False
+CONF_ELECTRICITY_TAX = "electricity_tax"
+DEFAULT_ELECTRICITY_TAX = 2.253
+CONF_CHEAPER_SUNDAY_RATE = "cheaper_sunday_rate"
+DEFAULT_CHEAPER_SUNDAY_RATE = False
+CONF_CHEAPER_HOLIDAY_RATE = "cheaper_holiday_rate"
+DEFAULT_CHEAPER_HOLIDAY_RATE = False
 
 def get_config_parameter(config_entry, section, key, fallback):
     """

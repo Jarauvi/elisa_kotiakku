@@ -30,10 +30,10 @@ from .const import (
     DEFAULT_BATTERY_CAPACITY,
     MIN_BATTERY_CAPACITY,
     MAX_BATTERY_CAPACITY,
-    CONF_ADD_TAX,
-    DEFAULT_ADD_TAX,
-    CONF_TAX_PERCENTAGE,
-    DEFAULT_TAX_PERCENTAGE,
+    CONF_ADD_VAT,
+    DEFAULT_ADD_VAT,
+    CONF_VAT_PERCENTAGE,
+    DEFAULT_VAT_PERCENTAGE,
     CONF_TRANSFER_PRICING,
     DEFAULT_TRANSFER_PRICING,
     TRANSFER_IGNORE,
@@ -54,23 +54,54 @@ from .const import (
     DEFAULT_SUMMER_START_MONTH,
     CONF_WINTER_START_MONTH,
     DEFAULT_WINTER_START_MONTH,
-    CONF_SUMMER_DAY_PRICE,
-    DEFAULT_SUMMER_DAY_PRICE,
-    CONF_SUMMER_NIGHT_PRICE,
-    DEFAULT_SUMMER_NIGHT_PRICE,
     CONF_WINTER_DAY_PRICE,
     DEFAULT_WINTER_DAY_PRICE,
-    CONF_WINTER_NIGHT_PRICE,
-    DEFAULT_WINTER_NIGHT_PRICE,
+    CONF_OTHER_PRICE,
+    DEFAULT_OTHER_PRICE,
     SECTION_API_SETTINGS,
     SECTION_BATTERY_SETTINGS,
     SECTION_CURRENCY_SETTINGS,
+    CONF_ADD_ELECTRICITY_TAX,
+    DEFAULT_ADD_ELECTRICITY_TAX,
+    CONF_ADD_EXPORT_TRANSFER_FEE,
+    DEFAULT_ADD_EXPORT_TRANSFER_FEE,
+    CONF_EXPORT_TRANSFER_FEE,
+    DEFAULT_EXPORT_TRANSFER_FEE,
+    CONF_ELECTRICITY_TAX,
+    DEFAULT_ELECTRICITY_TAX,
+    CONF_CHEAPER_SUNDAY_RATE,
+    DEFAULT_CHEAPER_SUNDAY_RATE,
+    CONF_CHEAPER_HOLIDAY_RATE,
+    DEFAULT_CHEAPER_HOLIDAY_RATE,
     get_config_parameter
     
     
 )
 
-async def validate_api_key(hass, data):
+async def device_exists(hass, name):
+    """Check if a device with the given name already exists."""
+    device_registry = async_get_device_registry(hass)
+    return any(device.name == name for device in device_registry.devices.values())
+
+async def api_key_exists(entries, api_key, current_entry_id=None):
+        """Check if any other entry already uses this API key."""
+        for entry in entries:
+            if current_entry_id and entry.entry_id == current_entry_id:
+                continue
+            
+            existing_key = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_API_KEY, "")
+            if existing_key == api_key:
+                return True
+        return False
+
+async def validate(hass, entries, data, current_entry_id=None):
+    if CONF_NAME in data[SECTION_BATTERY_SETTINGS]:
+        if await device_exists(hass, data[SECTION_BATTERY_SETTINGS][CONF_NAME]):
+            return "device_already_configured"
+    
+    if await api_key_exists(entries, data[SECTION_API_SETTINGS][CONF_API_KEY], current_entry_id):
+        return "api_already_configured"
+
     session = async_get_clientsession(hass)
     headers = {
         "x-api-key": data[SECTION_API_SETTINGS][CONF_API_KEY],
@@ -100,7 +131,7 @@ async def validate_api_key(hass, data):
         # This catches EVERYTHING else and prints the actual error to your log
         _LOGGER.error("Validation failed: %s", err)
         return "cannot_connect"
-    
+            
     return None
 
 class ElisaKotiakkuCommonSteps:
@@ -131,9 +162,27 @@ class ElisaKotiakkuCommonSteps:
                     default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_FIXED_TRANSFER_PRICE, DEFAULT_FIXED_TRANSFER_PRICE))
                 ): selector.NumberSelector(
                     selector.NumberSelectorConfig(
-                        min=0, max=10, step=0.1, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                        min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                     )
-                )
+                ),
+                vol.Optional(CONF_ADD_ELECTRICITY_TAX, default=DEFAULT_ADD_ELECTRICITY_TAX): bool,
+                vol.Required(
+                    CONF_ELECTRICITY_TAX, 
+                    default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX))
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                    )
+                ),
+                vol.Optional(CONF_ADD_EXPORT_TRANSFER_FEE, default=DEFAULT_ADD_EXPORT_TRANSFER_FEE): bool,
+                vol.Required(
+                    CONF_EXPORT_TRANSFER_FEE, 
+                    default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE))
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                    )
+                ),
             })
         )
         
@@ -168,7 +217,7 @@ class ElisaKotiakkuCommonSteps:
                 default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_PRICE, DEFAULT_DAY_PRICE))
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
-                    min=0, max=10, step=0.1, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                    min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                 )
             ),
             vol.Required(
@@ -176,9 +225,27 @@ class ElisaKotiakkuCommonSteps:
                 default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_NIGHT_PRICE, DEFAULT_NIGHT_PRICE))
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
-                    min=0, max=10, step=0.1, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                    min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                 )
-            )
+            ),
+            vol.Optional(CONF_ADD_ELECTRICITY_TAX, default=DEFAULT_ADD_ELECTRICITY_TAX): bool,
+            vol.Required(
+                CONF_ELECTRICITY_TAX, 
+                default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX))
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                )
+            ),
+            vol.Optional(CONF_ADD_EXPORT_TRANSFER_FEE, default=DEFAULT_ADD_EXPORT_TRANSFER_FEE): bool,
+            vol.Required(
+                CONF_EXPORT_TRANSFER_FEE, 
+                default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE))
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                )
+            ),
         })
 
         return self.async_show_form(
@@ -237,29 +304,15 @@ class ElisaKotiakkuCommonSteps:
                 )
             ),
             vol.Required(
-                CONF_WINTER_NIGHT_PRICE, 
-                default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_NIGHT_PRICE, DEFAULT_WINTER_NIGHT_PRICE))
+                CONF_OTHER_PRICE, 
+                default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_OTHER_PRICE, DEFAULT_OTHER_PRICE))
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(
                     min=0, max=10, step=0.1, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                 )
             ),
-            vol.Required(
-                CONF_SUMMER_DAY_PRICE, 
-                default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_DAY_PRICE, DEFAULT_SUMMER_DAY_PRICE))
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=0, max=10, step=0.1, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
-                )
-            ),
-            vol.Required(
-                CONF_SUMMER_NIGHT_PRICE, 
-                default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_NIGHT_PRICE, DEFAULT_SUMMER_NIGHT_PRICE))
-            ): selector.NumberSelector(
-                selector.NumberSelectorConfig(
-                    min=0, max=10, step=0.1, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
-                )
-            )
+            vol.Optional(CONF_CHEAPER_SUNDAY_RATE, default=DEFAULT_CHEAPER_SUNDAY_RATE): bool,
+            vol.Optional(CONF_CHEAPER_HOLIDAY_RATE, default=DEFAULT_CHEAPER_HOLIDAY_RATE): bool,
         })
 
         return self.async_show_form(
@@ -276,38 +329,17 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, ElisaKotiakkuCommonStep
     def async_get_options_flow(config_entry):
         """Get the options flow for this handler."""
         return ElisaKotiakkuOptionsFlow()
-    
-    async def _device_exists(self, name: str) -> bool:
-        """Check if a device with the given name already exists."""
-        device_registry = async_get_device_registry(self.hass)
-        return any(device.name == name for device in device_registry.devices.values())
-
-    async def _api_key_exists(self, api_key: str) -> bool:
-            """Check if any other entry already uses this API key."""
-            current_entries = self._async_current_entries()
-            for entry in current_entries:
-                existing_key = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_API_KEY, "")
-                if existing_key == api_key:
-                    return True
-            return False
         
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
         errors = {}
         
         if user_input is not None:
-            # VALIDATION STEP: Check if the token/URL works
-            error = await validate_api_key(self.hass, user_input)
+            error = await validate(self.hass, self._async_current_entries(), user_input)
 
             if error:
                 errors["base"] = error
                 
-            if await self._device_exists(user_input[SECTION_BATTERY_SETTINGS][CONF_NAME]):
-                errors["base"] = "device_already_configured"
-            
-            if await self._api_key_exists(user_input[SECTION_API_SETTINGS][CONF_API_KEY]):
-                errors["base"] = "api_already_configured"
-            
             else:
                 pricing = user_input[SECTION_CURRENCY_SETTINGS][CONF_TRANSFER_PRICING]
 
@@ -352,8 +384,8 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, ElisaKotiakkuCommonStep
                 ),
                 vol.Required(SECTION_CURRENCY_SETTINGS): section(
                     vol.Schema({
-                        vol.Optional(CONF_ADD_TAX, default=DEFAULT_ADD_TAX): bool,
-                        vol.Optional(CONF_TAX_PERCENTAGE, default=DEFAULT_TAX_PERCENTAGE): vol.All(
+                        vol.Optional(CONF_ADD_VAT, default=DEFAULT_ADD_VAT): bool,
+                        vol.Optional(CONF_VAT_PERCENTAGE, default=DEFAULT_VAT_PERCENTAGE): vol.All(
                             vol.Coerce(float), vol.Range(min=0, max=30)
                         ),
                         vol.Required(
@@ -371,7 +403,7 @@ class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, ElisaKotiakkuCommonStep
                             )
                         )
                     }),
-                    {"collapsed": True}
+                    {"collapsed": False}
                 ),
             }),
             errors=errors,
@@ -385,13 +417,14 @@ class ElisaKotiakkuOptionsFlow(config_entries.OptionsFlow, ElisaKotiakkuCommonSt
         errors = {}
         
         conf = self.config_entry
+        entries = self.hass.config_entries.async_entries("elisa_kotiakku")
 
         if user_input is not None:
-            # VALIDATION STEP: Check if the token/URL works
-            error = await validate_api_key(self.hass, user_input)
+            error = await validate(self.hass, entries, user_input, current_entry_id=self.config_entry.entry_id)
 
             if error:
                 errors["base"] = error
+                
             else:
                 pricing = user_input[SECTION_CURRENCY_SETTINGS][CONF_TRANSFER_PRICING]
 
@@ -430,8 +463,8 @@ class ElisaKotiakkuOptionsFlow(config_entries.OptionsFlow, ElisaKotiakkuCommonSt
                 ),
                 vol.Required(SECTION_CURRENCY_SETTINGS): section(
                     vol.Schema({
-                        vol.Optional(CONF_ADD_TAX, default=bool(get_config_parameter(conf, SECTION_CURRENCY_SETTINGS, CONF_ADD_TAX, DEFAULT_ADD_TAX))): bool,
-                        vol.Optional(CONF_TAX_PERCENTAGE, default=str(get_config_parameter(conf, SECTION_CURRENCY_SETTINGS, CONF_TAX_PERCENTAGE, DEFAULT_TAX_PERCENTAGE))): vol.All(
+                        vol.Optional(CONF_ADD_VAT, default=bool(get_config_parameter(conf, SECTION_CURRENCY_SETTINGS, CONF_ADD_VAT, DEFAULT_ADD_VAT))): bool,
+                        vol.Optional(CONF_VAT_PERCENTAGE, default=str(get_config_parameter(conf, SECTION_CURRENCY_SETTINGS, CONF_VAT_PERCENTAGE, DEFAULT_VAT_PERCENTAGE))): vol.All(
                             vol.Coerce(float), vol.Range(min=0, max=30)
                         ),
                         vol.Required(
@@ -449,7 +482,7 @@ class ElisaKotiakkuOptionsFlow(config_entries.OptionsFlow, ElisaKotiakkuCommonSt
                             )
                         )
                     }),
-                    {"collapsed": True}
+                    {"collapsed": False}
                 ),
             }),
             errors=errors,

@@ -38,7 +38,11 @@
         "title": "Fixed tariff",
         "description": "Fixed transfer price settings",
         "data": {
-          "transfer_price": "Fixed transfer price (c/kWh)"
+          "transfer_price": "Fixed transfer price (c/kWh)",
+          "add_electricity_tax": "Add electricity tax",
+          "electricity_tax": "Electricity tax (c/kWh)",
+          "add_export_transfer_fee": "Add export fee",
+          "export_transfer_fee": "Export fee (c/kWh)"
         }
       },
       "day_night_transfer": {
@@ -48,7 +52,11 @@
           "day_start": "Start time for day price",
           "night_start": "Start time for day night",
           "day_price": "Price of day transfer (c/kWh)",
-          "night_price": "Price of night transfer (c/kWh)"
+          "night_price": "Price of night transfer (c/kWh)",
+          "add_electricity_tax": "Add electricity tax",
+          "electricity_tax": "Electricity tax (c/kWh)",
+          "add_export_transfer_fee": "Add export fee",
+          "export_transfer_fee": "Export fee (c/kWh)"
         }
       },
       "seasonal_transfer": {
@@ -60,9 +68,13 @@
           "day_start": "Start time for day price",
           "night_start": "Start time for night price",
           "winter_day_price": "Price of winter day price (c/kWh)",
-          "winter_night_price": "Price of winter night price (c/kWh)",
-          "summer_day_price": "Price of summer day price (c/kWh)",
-          "summer_night_price": "Price of summer night price (c/kWh)"
+          "other_price": "Others than winter days prices (c/kWh)",
+          "cheaper_sunday_rate": "Use cheaper sunday rates",
+          "cheaper_holiday_rate": "Use cheaper holiday rates",
+          "add_electricity_tax": "Add electricity tax",
+          "electricity_tax": "Electricity tax (c/kWh)",
+          "add_export_transfer_fee": "Add export fee",
+          "export_transfer_fee": "Export fee (c/kWh)"
         }
       }
     },
@@ -123,7 +135,11 @@
         "title": "Fixed tariff",
         "description": "Fixed transfer price settings",
         "data": {
-          "transfer_price": "Fixed transfer price (c/kWh)"
+          "transfer_price": "Fixed transfer price (c/kWh)",
+          "add_electricity_tax": "Add electricity tax",
+          "electricity_tax": "Electricity tax (c/kWh)",
+          "add_export_transfer_fee": "Add export fee",
+          "export_transfer_fee": "Export fee (c/kWh)"
         }
       },
       "day_night_transfer": {
@@ -133,7 +149,11 @@
           "day_start": "Start time for day price",
           "night_start": "Start time for day night",
           "day_price": "Price of day transfer (c/kWh)",
-          "night_price": "Price of night transfer (c/kWh)"
+          "night_price": "Price of night transfer (c/kWh)",
+          "add_electricity_tax": "Add electricity tax",
+          "electricity_tax": "Electricity tax (c/kWh)",
+          "add_export_transfer_fee": "Add export fee",
+          "export_transfer_fee": "Export fee (c/kWh)"
         }
       },
       "seasonal_transfer": {
@@ -145,9 +165,13 @@
           "day_start": "Start time for day price",
           "night_start": "Start time for night price",
           "winter_day_price": "Price of winter day price (c/kWh)",
-          "winter_night_price": "Price of winter night price (c/kWh)",
-          "summer_day_price": "Price of summer day price (c/kWh)",
-          "summer_night_price": "Price of summer night price (c/kWh)"
+          "other_price": "Others than winter days prices (c/kWh)",
+          "cheaper_sunday_rate": "Use cheaper sunday rates",
+          "cheaper_holiday_rate": "Use cheaper holiday rates",
+          "add_electricity_tax": "Add electricity tax",
+          "electricity_tax": "Electricity tax (c/kWh)",
+          "add_export_transfer_fee": "Add export fee",
+          "export_transfer_fee": "Export fee (c/kWh)"
         }
       }
     },

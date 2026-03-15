@@ -21,11 +21,11 @@ from .const import (
     CONF_SCAN_INTERVAL,
     CONF_POWER_UNIT,
     CONF_BATTERY_CAPACITY, 
-    CONF_ADD_TAX,
-    CONF_TAX_PERCENTAGE,
+    CONF_ADD_VAT,
+    CONF_VAT_PERCENTAGE,
     CONF_TRANSFER_PRICING,
-    DEFAULT_ADD_TAX,
-    DEFAULT_TAX_PERCENTAGE,
+    DEFAULT_ADD_VAT,
+    DEFAULT_VAT_PERCENTAGE,
     DEFAULT_TRANSFER_PRICING,
     SECTION_BATTERY_SETTINGS,
     SECTION_API_SETTINGS,
@@ -93,7 +93,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 CONF_BATTERY_CAPACITY: config_entry.data[CONF_BATTERY_CAPACITY],
             }
         }
-        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_ADD_TAX, False)
+        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_ADD_VAT, False)
         new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_TRANSFER_PRICING, "ignore")
 
         hass.config_entries.async_update_entry(

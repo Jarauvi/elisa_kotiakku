@@ -1,6 +1,12 @@
 """DataUpdateCoordinator for Elisa Kotiakku."""
 
+import holidays
+try:
+    from holidays.countries.finland import Finland
+except ImportError:
+    pass
 import logging
+import traceback
 from datetime import datetime, timedelta, time
 
 from homeassistant.util import dt as dt_util
@@ -29,10 +35,10 @@ from .const import (
     DEFAULT_TRANSFER_PRICING,
     CONF_FIXED_TRANSFER_PRICE,
     DEFAULT_FIXED_TRANSFER_PRICE,
-    CONF_TAX_PERCENTAGE,
-    DEFAULT_TAX_PERCENTAGE,
-    CONF_ADD_TAX,
-    DEFAULT_ADD_TAX,
+    CONF_VAT_PERCENTAGE,
+    DEFAULT_VAT_PERCENTAGE,
+    CONF_ADD_VAT,
+    DEFAULT_ADD_VAT,
     CONF_DAY_PRICE,
     DEFAULT_DAY_PRICE,
     CONF_DAY_START,
@@ -41,14 +47,10 @@ from .const import (
     DEFAULT_NIGHT_PRICE,
     CONF_NIGHT_START,
     DEFAULT_NIGHT_START,
-    CONF_SUMMER_DAY_PRICE,
-    DEFAULT_SUMMER_DAY_PRICE,
-    CONF_SUMMER_NIGHT_PRICE,
-    DEFAULT_SUMMER_NIGHT_PRICE,
     CONF_WINTER_DAY_PRICE,
     DEFAULT_WINTER_DAY_PRICE,
-    CONF_WINTER_NIGHT_PRICE,
-    DEFAULT_WINTER_NIGHT_PRICE,
+    CONF_OTHER_PRICE,
+    DEFAULT_OTHER_PRICE,
     CONF_SUMMER_START_MONTH,
     DEFAULT_SUMMER_START_MONTH,
     CONF_WINTER_START_MONTH,
@@ -57,6 +59,18 @@ from .const import (
     TRANSFER_DAY_NIGHT,
     TRANSFER_IGNORE,
     TRANSFER_SEASONAL,
+    CONF_ADD_ELECTRICITY_TAX,
+    DEFAULT_ADD_ELECTRICITY_TAX,
+    CONF_ADD_EXPORT_TRANSFER_FEE,
+    DEFAULT_ADD_EXPORT_TRANSFER_FEE,
+    CONF_ELECTRICITY_TAX,
+    DEFAULT_ELECTRICITY_TAX,
+    CONF_EXPORT_TRANSFER_FEE,
+    DEFAULT_EXPORT_TRANSFER_FEE,
+    CONF_CHEAPER_HOLIDAY_RATE,
+    DEFAULT_CHEAPER_HOLIDAY_RATE,
+    CONF_CHEAPER_SUNDAY_RATE,
+    DEFAULT_CHEAPER_SUNDAY_RATE,
     get_config_parameter
 )
 _LOGGER = logging.getLogger(__name__)
@@ -70,25 +84,8 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
         self.entry = entry
         self.api_url = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_URL, DEFAULT_URL)
         self.api_key = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_API_KEY, "")
-        self._primed = False
+        self._holiday_cache = {}
         
-        self._solar_energy_kwh = 0.0
-        self._solar_to_house_kwh = 0.0
-        self._solar_to_battery_kwh = 0.0
-        self._solar_to_grid_kwh = 0.0
-        self._grid_to_house_kwh = 0.0
-        self._grid_to_battery_kwh = 0.0
-        self._battery_to_house_kwh = 0.0
-        self._battery_to_grid_kwh = 0.0
-        self._house_energy_kwh = 0.0
-        self._total_battery_charge_kwh = 0.0
-        self._total_battery_discharge_kwh = 0.0
-        self._total_grid_import_kwh = 0.0
-        self._total_grid_export_kwh = 0.0
-        self._battery_loss_kwh = 0.0
-        self._last_energy_run = None
-        
-        # Pull scan interval from config or use default
         scan_interval = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 
         super().__init__(
@@ -97,6 +94,15 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
             name=f"{DOMAIN}_{entry.entry_id}",
             update_interval=timedelta(seconds=scan_interval),
         )
+
+    async def _async_get_fi_holidays(self, year):
+        """Fetch holidays from cache or create new ones in executor."""
+        if year not in self._holiday_cache:
+            # We use a lambda to ensure the call is wrapped properly
+            self._holiday_cache[year] = await self.hass.async_add_executor_job(
+                lambda: holidays.Finland(years=year)
+            )
+        return self._holiday_cache[year]
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.
@@ -172,10 +178,28 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 data["battery_loss_kw"] = max(loss, 0)
                 data["battery_loss_kw_display"] = round(data.get("battery_loss_kw", 0) * power_display_multiplier)
                 
-                # Costs
+                # Savings
                 price_eur_kwh = data.get("spot_price_cents_per_kwh", 0) / 100
-                data["net_savings_rate"] = (data["battery_discharge_total_kw"] * price_eur_kwh) - (data.get("grid_to_battery_kw", 0) * price_eur_kwh)
+                transfer_fee_eur_kwh = await self.get_transfer_fee(self.entry) / 100
+            
+                vat_mult = 1.0
+                if get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_VAT, DEFAULT_ADD_VAT):
+                    vat_mult = (1 + (get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_VAT_PERCENTAGE, DEFAULT_VAT_PERCENTAGE)/100))
                 
+                buy_rate = (price_eur_kwh + transfer_fee_eur_kwh) * vat_mult
+                solar_savings = data.get("solar_to_house_kw", 0) * buy_rate
+                battery_savings = data.get("battery_to_house_kw", 0) * buy_rate
+
+                export_fee = 0
+                if get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_EXPORT_TRANSFER_FEE, DEFAULT_ADD_EXPORT_TRANSFER_FEE):
+                    export_fee = get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE)
+                
+                sell_rate = price_eur_kwh - export_fee
+                export_income = (data.get("solar_to_grid_kw", 0) + data.get("battery_to_grid_kw", 0)) * sell_rate
+                charging_cost = data.get("grid_to_battery_kw", 0) * buy_rate
+                
+                data["net_savings_rate"] = solar_savings + battery_savings + export_income - charging_cost
+
                 # Charge efficiency
                 solar = data.get("solar_to_battery_kw", 0)
                 grid = data.get("grid_to_battery_kw", 0)
@@ -228,6 +252,7 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 return data
 
         except Exception as err:
+            _LOGGER.error("Full Traceback: %s", traceback.format_exc())
             raise UpdateFailed(f"Error communicating with API: {err}") from err
         
     def calculate_target_time(self, current_soc, power_kw, target_soc, battery_capacity):
@@ -263,41 +288,59 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
             return f"{hours}h {mins}m"
         return f"{mins}m"
 
-    def get_transfer_fee(self, entry):
+    async def get_transfer_fee(self, entry):
         mode = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_TRANSFER_PRICING, DEFAULT_TRANSFER_PRICING)
+        add_electricity_tax = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_ELECTRICITY_TAX, DEFAULT_ADD_ELECTRICITY_TAX)
         now = datetime.now()
+        is_sunday = now.weekday() == 6
+        is_holiday = await self.is_billing_holiday(now.date())
         current_time = now.time()
         current_month = now.month
+        price = 0
 
         if mode == TRANSFER_FIXED:
-            return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_FIXED_TRANSFER_PRICE, DEFAULT_FIXED_TRANSFER_PRICE)
+            price = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_FIXED_TRANSFER_PRICE, DEFAULT_FIXED_TRANSFER_PRICE)
+            if add_electricity_tax:
+                price += get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX)
 
         if mode == TRANSFER_DAY_NIGHT:
             day_start = datetime.strptime(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_START, DEFAULT_DAY_START), "%H:%M:%S").time()
             night_start = datetime.strptime(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_NIGHT_START, DEFAULT_NIGHT_START), "%H:%M:%S").time()
 
+            
+            if is_sunday or is_holiday:
+                price = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_PRICE, DEFAULT_DAY_PRICE)
+                
             if self.is_within_time_range(current_time, day_start, night_start):
-                return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_PRICE, DEFAULT_DAY_PRICE)
-            return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_NIGHT_PRICE, DEFAULT_NIGHT_PRICE)
+                price = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_PRICE, DEFAULT_DAY_PRICE)
+            else:
+                price = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_NIGHT_PRICE, DEFAULT_NIGHT_PRICE)
+            if add_electricity_tax:
+                price += get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX)
 
         if mode == TRANSFER_SEASONAL:
-            winter_start = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_START_MONTH, DEFAULT_WINTER_START_MONTH)
-            summer_start = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_START_MONTH, DEFAULT_SUMMER_START_MONTH)
+            winter_start = int(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_START_MONTH, DEFAULT_WINTER_START_MONTH))
+            summer_start = int(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_START_MONTH, DEFAULT_SUMMER_START_MONTH))
             day_start = datetime.strptime(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_DAY_START, DEFAULT_DAY_START), "%H:%M:%S").time()
             night_start = datetime.strptime(get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_NIGHT_START, DEFAULT_NIGHT_START), "%H:%M:%S").time()
+            cheaper_sunday_rate = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_CHEAPER_SUNDAY_RATE, DEFAULT_CHEAPER_SUNDAY_RATE)
+            cheaper_holiday_rate = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_CHEAPER_HOLIDAY_RATE, DEFAULT_CHEAPER_HOLIDAY_RATE)
 
             is_winter = current_month >= winter_start or current_month < summer_start
             is_day = self.is_within_time_range(current_time, day_start, night_start)
+            
+            if (cheaper_sunday_rate and is_sunday) or (cheaper_holiday_rate and is_holiday):
+                price = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_OTHER_PRICE, DEFAULT_OTHER_PRICE)
+            elif is_winter and is_day:
+                price = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_DAY_PRICE, DEFAULT_WINTER_DAY_PRICE)
+            else:
+                price = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_OTHER_PRICE, DEFAULT_OTHER_PRICE)
 
-            if is_winter:
-                if is_day:
-                    return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_DAY_PRICE, DEFAULT_WINTER_DAY_PRICE)
-                return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_WINTER_NIGHT_PRICE, DEFAULT_WINTER_NIGHT_PRICE)
-            if is_day:
-                get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_DAY_PRICE, DEFAULT_SUMMER_DAY_PRICE)
-            get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_SUMMER_NIGHT_PRICE, DEFAULT_SUMMER_NIGHT_PRICE)
+            if add_electricity_tax:
+                price += get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX)
 
-        return 0.0
+        
+        return price
 
     def is_within_time_range(self, current_time, start_time, end_time):
         """Check if current time is within a range, handling midnight wrap-around."""
@@ -306,3 +349,17 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
             return start_time <= current_time < end_time
         else:
             return current_time >= start_time or current_time < end_time
+        
+    async def is_billing_holiday(self, check_date):
+        """Check if the date is a Finnish public holiday."""
+        fi_holidays = await self._async_get_fi_holidays(check_date.year)
+        
+        extra_holidays = [
+            "Midsummer Eve", 
+            "Christmas Eve"
+        ]
+        
+        is_official = check_date in fi_holidays
+        is_extra = fi_holidays.get(check_date) in extra_holidays
+        
+        return is_official or is_extra
