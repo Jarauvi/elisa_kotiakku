@@ -3,3 +3,4 @@ pytest-homeassistant-custom-component
 aioresponses
 pytest-sugar
 pytest-asyncio
+holidays
