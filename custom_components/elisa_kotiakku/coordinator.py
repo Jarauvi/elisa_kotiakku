@@ -149,103 +149,163 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                     "battery_to_house_kw",
                     "battery_to_grid_kw"
                 ]
+                other_keys = [
+                    "spot_price_cents_per_kwh",
+                    "state_of_charge_percent",
+                    "battery_temperature_celsius"
+                ]
+                
                 for key in power_keys:
                     if key in data:
-                        data[f"{key}_display"] = round(data[key] * power_display_multiplier, data["power_decimals"])
+                        if data.get(key) is not None:
+                            data[f"{key}_display"] = round(data[key] * power_display_multiplier, data["power_decimals"])
+                        else:
+                            _LOGGER.error(f"Null value received for: {key}")
+                    else:
+                        _LOGGER.error(f"Data field missing: {key}")
+                        
+                for key in other_keys:
+                    if key in data:
+                        if data.get(key) is None:
+                            _LOGGER.error(f"Null value received for: {key}")
+                    else:
+                        _LOGGER.error(f"Data field missing: {key}")
                 
                 # Power sums
-                data["battery_charge_total_kw"] = data.get("solar_to_battery_kw", 0) + data.get("grid_to_battery_kw", 0)
-                data["battery_charge_total_kw_display"] = round(data.get("solar_to_battery_kw_display", 0) + data.get("grid_to_battery_kw_display", 0), CONF_POWER_DECIMALS)
-                data["battery_discharge_total_kw"] = data.get("battery_to_house_kw", 0) + data.get("battery_to_grid_kw", 0)
-                data["battery_discharge_total_kw_display"] = round(data.get("battery_to_house_kw_display", 0) + data.get("battery_to_grid_kw_display", 0), CONF_POWER_DECIMALS)
-                data["total_grid_import_kw"] = data.get("grid_to_house_kw", 0) + data.get("grid_to_battery_kw", 0)
-                data["total_grid_import_kw_display"] = round(data.get("total_grid_import_kw", 0) * power_display_multiplier, CONF_POWER_DECIMALS)
-                data["total_grid_export_kw"] = data.get("battery_to_grid_kw", 0) + data.get("solar_to_grid_kw", 0)
-                data["total_grid_export_kw_display"] = round(data.get("total_grid_export_kw", 0) * power_display_multiplier, CONF_POWER_DECIMALS)
+                if data.get("solar_to_battery_kw") is not None and data.get("grid_to_battery_kw") is not None:
+                    data["battery_charge_total_kw"] = data.get("solar_to_battery_kw", 0) + data.get("grid_to_battery_kw", 0)
+                    data["battery_charge_total_kw_display"] = round(data.get("solar_to_battery_kw_display", 0) + data.get("grid_to_battery_kw_display", 0), CONF_POWER_DECIMALS)
+                else: 
+                    data["battery_charge_total_kw"] = None
+                    data["battery_charge_total_kw_display"] = None
+                    
+                if data.get("battery_to_house_kw") is not None and data.get("battery_to_grid_kw") is not None:
+                    data["battery_discharge_total_kw"] = data.get("battery_to_house_kw", 0) + data.get("battery_to_grid_kw", 0)
+                    data["battery_discharge_total_kw_display"] = round(data.get("battery_to_house_kw_display", 0) + data.get("battery_to_grid_kw_display", 0), CONF_POWER_DECIMALS)
+                else:
+                    data["battery_discharge_total_kw"] = None
+                    data["battery_discharge_total_kw_display"] = None
+                    
+                if data.get("grid_to_house_kw") is not None and data.get("grid_to_battery_kw") is not None:
+                    data["total_grid_import_kw"] = data.get("grid_to_house_kw", 0) + data.get("grid_to_battery_kw", 0)
+                    data["total_grid_import_kw_display"] = round(data.get("total_grid_import_kw", 0) * power_display_multiplier, CONF_POWER_DECIMALS)
+                else:
+                    data["total_grid_import_kw"] = None
+                    data["total_grid_import_kw_display"] = None
+                    
+                if data.get("battery_to_grid_kw") is not None and data.get("solar_to_grid_kw") is not None:
+                    data["total_grid_export_kw"] = data.get("battery_to_grid_kw", 0) + data.get("solar_to_grid_kw", 0)
+                    data["total_grid_export_kw_display"] = round(data.get("total_grid_export_kw", 0) * power_display_multiplier, CONF_POWER_DECIMALS)
+                else:
+                    data["total_grid_export_kw"] = None
+                    data["total_grid_export_kw_display"] = None
                               
                 # Loss power
-                battery_power = data.get("battery_power_kw", 0)
                 
-                loss = 0
-                if battery_power < 0:
-                    charge_input = data.get("solar_to_battery_kw", 0) + data.get("grid_to_battery_kw", 0)
-                    stored = abs(battery_power)
-                    loss = charge_input - stored
-                elif battery_power > 0:
-                    delivered = data.get("battery_to_house_kw", 0) + data.get("battery_to_grid_kw", 0)
-                    loss = battery_power - delivered
-                
-                data["battery_loss_kw"] = max(loss, 0)
-                data["battery_loss_kw_display"] = round(data.get("battery_loss_kw", 0) * power_display_multiplier)
-                
+                try:
+                    battery_power = data.get("battery_power_kw", 0)
+                    
+                    loss = 0
+                    if battery_power < 0:
+                        charge_input = data.get("solar_to_battery_kw", 0) + data.get("grid_to_battery_kw", 0)
+                        stored = abs(battery_power)
+                        loss = charge_input - stored
+                    elif battery_power > 0:
+                        delivered = data.get("battery_to_house_kw", 0) + data.get("battery_to_grid_kw", 0)
+                        loss = battery_power - delivered
+                    
+                    data["battery_loss_kw"] = max(loss, 0)
+                    data["battery_loss_kw_display"] = round(data.get("battery_loss_kw", 0) * power_display_multiplier, CONF_POWER_DECIMALS)
+                except TypeError:
+                    data["battery_loss_kw"] = None
+                    data["battery_loss_kw_display"] = None
+                    
+                    
                 # Savings
-                price_eur_kwh = data.get("spot_price_cents_per_kwh", 0) / 100
-                transfer_fee_eur_kwh = await self.get_transfer_fee(self.entry) / 100
-            
-                vat_mult = 1.0
-                if get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_VAT, DEFAULT_ADD_VAT):
-                    vat_mult = (1 + (get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_VAT_PERCENTAGE, DEFAULT_VAT_PERCENTAGE)/100))
+                try:
+                    price_eur_kwh = data.get("spot_price_cents_per_kwh", 0) / 100
+                    transfer_fee_eur_kwh = await self.get_transfer_fee(self.entry) / 100
                 
-                buy_rate = (price_eur_kwh + transfer_fee_eur_kwh) * vat_mult
-                solar_savings = data.get("solar_to_house_kw", 0) * buy_rate
-                battery_savings = data.get("battery_to_house_kw", 0) * buy_rate
+                    vat_mult = 1.0
+                    if get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_VAT, DEFAULT_ADD_VAT):
+                        vat_mult = (1 + (get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_VAT_PERCENTAGE, DEFAULT_VAT_PERCENTAGE)/100))
+                    
+                    buy_rate = (price_eur_kwh + transfer_fee_eur_kwh) * vat_mult
+                    solar_savings = data.get("solar_to_house_kw", 0) * buy_rate
+                    battery_savings = data.get("battery_to_house_kw", 0) * buy_rate
 
-                export_fee = 0
-                if get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_EXPORT_TRANSFER_FEE, DEFAULT_ADD_EXPORT_TRANSFER_FEE):
-                    export_fee = get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE)
-                
-                sell_rate = price_eur_kwh - export_fee
-                export_income = (data.get("solar_to_grid_kw", 0) + data.get("battery_to_grid_kw", 0)) * sell_rate
-                charging_cost = data.get("grid_to_battery_kw", 0) * buy_rate
-                
-                data["net_savings_rate"] = solar_savings + battery_savings + export_income - charging_cost
-
+                    export_fee = 0
+                    if get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_EXPORT_TRANSFER_FEE, DEFAULT_ADD_EXPORT_TRANSFER_FEE):
+                        export_fee = get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE)
+                    
+                    sell_rate = price_eur_kwh - export_fee
+                    export_income = (data.get("solar_to_grid_kw", 0) + data.get("battery_to_grid_kw", 0)) * sell_rate
+                    charging_cost = data.get("grid_to_battery_kw", 0) * buy_rate
+                    
+                    data["net_savings_rate"] = solar_savings + battery_savings + export_income - charging_cost
+                    
+                except TypeError:
+                    data["net_savings_rate"] = None
+                    
                 # Charge efficiency
-                solar = data.get("solar_to_battery_kw", 0)
-                grid = data.get("grid_to_battery_kw", 0)
-                battery_power = data.get("battery_power_kw")
+                try:
+                    solar = data.get("solar_to_battery_kw", 0)
+                    grid = data.get("grid_to_battery_kw", 0)
+                    battery_power = data.get("battery_power_kw")
 
-                charge_input = solar + grid
-                stored_power = abs(min(0, float(battery_power)))
+                    charge_input = solar + grid
+                    stored_power = abs(min(0, float(battery_power)))
 
-                eff = 0
-                if charge_input > 0:
-                    eff = (stored_power / charge_input) * 100
+                    eff = 0
+                    if charge_input > 0:
+                        eff = (stored_power / charge_input) * 100
+                        
+                    data["battery_charge_efficiency"] = round(min(eff, 100), 1)
                     
-                data["battery_charge_efficiency"] = round(min(eff, 100), 1)
-                    
-                # Discharge efficiency
-                house = data.get("battery_to_house_kw", 0)
-                grid = data.get("battery_to_grid_kw", 0)
-                battery_power = data.get("battery_power_kw")
+                except TypeError:
+                    data["battery_charge_efficiency"] = None
+                  
+                # Discharge efficiency  
+                try:
+                    house = data.get("battery_to_house_kw", 0)
+                    grid = data.get("battery_to_grid_kw", 0)
+                    battery_power = data.get("battery_power_kw")
 
-                battery_output = max(0, float(battery_power))
-                delivered = house + grid
+                    battery_output = max(0, float(battery_power))
+                    delivered = house + grid
 
-                eff = 0
-                if battery_output > 0:
-                    eff = (delivered / battery_output) * 100
-                    
-                data["battery_discharge_efficiency"] = round(min(eff, 100), 1)
-                    
+                    eff = 0
+                    if battery_output > 0:
+                        eff = (delivered / battery_output) * 100
+                        
+                    data["battery_discharge_efficiency"] = round(min(eff, 100), 1)
+                except TypeError:
+                    data["battery_discharge_efficiency"] = None
+                        
                 # Time-to-target sensors
-                battery_capacity = get_config_parameter(self.entry, SECTION_BATTERY_SETTINGS, CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY)
+                try:
+                    battery_capacity = get_config_parameter(self.entry, SECTION_BATTERY_SETTINGS, CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY)
 
-                # Time to 90% charge
-                data["time_to_90_percent"] = self.calculate_target_time(
-                    data.get("state_of_charge_percent", 0),
-                    battery_power,
-                    90,
-                    battery_capacity
-                )
+                    # Time to 90% charge
+                    data["time_to_90_percent"] = self.calculate_target_time(
+                        data.get("state_of_charge_percent", 0),
+                        battery_power,
+                        90,
+                        battery_capacity
+                    )
+                except TypeError:
+                    data["time_to_90_percent"] = None
                 
                 # Time to 15% discharge
-                data["time_to_15_percent"] = self.calculate_target_time(
-                    data.get("state_of_charge_percent", 0),
-                    battery_power,
-                    15,
-                    battery_capacity
-                )
+                try:
+                    data["time_to_15_percent"] = self.calculate_target_time(
+                        data.get("state_of_charge_percent", 0),
+                        battery_power,
+                        15,
+                        battery_capacity
+                    )
+                except TypeError:
+                    data["time_to_15_percent"] = None
     
                 _LOGGER.debug("Kotiakku data received: %s", data)
 

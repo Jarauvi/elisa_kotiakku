@@ -27,7 +27,7 @@
             "name": "Säästömittausten asetukset",
             "description": "Asetukset säästöjen laskentaa varten",
             "data": {
-              "add_tax": "Lisää hintoihin vero",
+              "add_tax": "Lisää hintoihin arvonlisävero",
               "tax_percentage": "Vero (%)",
               "transfer_pricing": "Sähkönsiirto"
             }
@@ -126,7 +126,7 @@
             "name": "Säästömittausten asetukset",
             "description": "Asetukset säästöjen laskentaa varten",
             "data": {
-              "add_tax": "Lisää hintoihin vero",
+              "add_tax": "Lisää hintoihin arvonlisävero",
               "tax_percentage": "Vero (%)",
               "transfer_pricing": "Sähkönsiirto"
             }
@@ -246,7 +246,8 @@
         "state": {
           "charging": "Lataa",
           "discharging": "Purkaa",
-          "idle": "Odottaa"
+          "idle": "Odottaa",
+          "disconnected": "Yhteysvirhe"
         }
       }
     }

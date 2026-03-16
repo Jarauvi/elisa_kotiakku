@@ -1,13 +1,15 @@
 """Tests for Elisa Kotiakku config flow."""
 import aiohttp
+import pytest
 from unittest.mock import patch
 from aioresponses import aioresponses
+from homeassistant.config_entries import ConfigEntry
 from unittest.mock import patch, AsyncMock, MagicMock
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
 
 from custom_components.elisa_kotiakku.config_flow import validate
-from custom_components.elisa_kotiakku.config_flow import ElisaKotiakkuConfigFlow
+from custom_components.elisa_kotiakku.config_flow import ElisaKotiakkuConfigFlow, ElisaKotiakkuOptionsFlow
 from custom_components.elisa_kotiakku.const import (
     DOMAIN, 
     CONF_POWER_UNIT, 
@@ -23,7 +25,8 @@ from custom_components.elisa_kotiakku.const import (
     TRANSFER_IGNORE,
     TRANSFER_FIXED, 
     TRANSFER_DAY_NIGHT, 
-    TRANSFER_SEASONAL
+    TRANSFER_SEASONAL,
+    CONF_BATTERY_CAPACITY
 )
 
 # --- Config Flow Tests ---
@@ -229,23 +232,95 @@ async def test_validate_connection_error(hass: HomeAssistant):
         result = await validate(hass, [], data)
         assert result == "cannot_connect"
         
-import pytest
-from unittest.mock import patch, MagicMock
-from homeassistant.config_entries import ConfigEntry
-from custom_components.elisa_kotiakku.config_flow import ElisaKotiakkuConfigFlow
-from custom_components.elisa_kotiakku.const import (
-    DOMAIN,
-    SECTION_BATTERY_SETTINGS,
-    SECTION_API_SETTINGS,
-    SECTION_CURRENCY_SETTINGS,
-    CONF_POWER_UNIT,
-    UNIT_W,
-    CONF_API_KEY,
-    CONF_URL,
-    CONF_TRANSFER_PRICING,
-    TRANSFER_IGNORE,
-    TRANSFER_FIXED,
-    TRANSFER_SEASONAL,
-    TRANSFER_DAY_NIGHT,
-)
+# Test async_get_options_flow returns an instance
+@pytest.mark.asyncio
+async def test_async_get_options_flow_returns_instance():
+    flow = ElisaKotiakkuConfigFlow()
+    options_flow = flow.async_get_options_flow(None)
+    assert isinstance(options_flow, ElisaKotiakkuOptionsFlow)
 
+# Test fixed transfer step with user_input creates entry
+@pytest.mark.asyncio
+async def test_async_step_fixed_transfer_creates_entry(hass):
+    flow = ElisaKotiakkuConfigFlow()
+    flow.hass = hass
+    flow._base_config = {"currency_settings": {}}
+    user_input = {"fixed_transfer_price": 1.23}
+
+    result = await flow.async_step_fixed_transfer(user_input=user_input)
+    assert result["type"] == "create_entry"
+    assert result["data"]["currency_settings"]["fixed_transfer_price"] == 1.23
+
+# Test day/night transfer step with user_input creates entry
+@pytest.mark.asyncio
+async def test_async_step_day_night_transfer_creates_entry(hass):
+    flow = ElisaKotiakkuConfigFlow()
+    flow.hass = hass
+    flow._base_config = {"currency_settings": {}}
+    user_input = {"day_price": 1.11, "night_price": 0.99}
+
+    result = await flow.async_step_day_night_transfer(user_input=user_input)
+    assert result["type"] == "create_entry"
+    assert result["data"]["currency_settings"]["day_price"] == 1.11
+    assert result["data"]["currency_settings"]["night_price"] == 0.99
+
+# Test seasonal transfer step with user_input creates entry
+@pytest.mark.asyncio
+async def test_async_step_seasonal_transfer_creates_entry(hass):
+    flow = ElisaKotiakkuConfigFlow()
+    flow.hass = hass
+    flow._base_config = {"currency_settings": {}}
+    user_input = {"winter_day_price": 2.0, "other_price": 1.5}
+
+    result = await flow.async_step_seasonal_transfer(user_input=user_input)
+    assert result["type"] == "create_entry"
+    assert result["data"]["currency_settings"]["winter_day_price"] == 2.0
+    assert result["data"]["currency_settings"]["other_price"] == 1.5
+
+# Test OptionsFlow returns error if validate fails
+@pytest.mark.asyncio
+
+@pytest.mark.asyncio
+async def test_options_flow_validate_error(hass):
+    """OptionsFlow returns a form with an error if validate fails."""
+
+    # 1️⃣ Create a ConfigEntry
+    entry = ConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="Test",
+        data={},
+        options={},
+        entry_id="id123",
+        discovery_keys=set(),
+        minor_version=1,
+        source="user",
+        subentries_data=[],
+        unique_id="uid123",
+    )
+
+    # 2️⃣ Register the entry using the HA API (await the coroutine!)
+    await hass.config_entries.async_add(entry)
+    await hass.async_block_till_done()
+
+    # 3️⃣ Start the options flow for this entry
+    flow_result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow_id = flow_result["flow_id"]
+
+    user_input = {
+        SECTION_CURRENCY_SETTINGS: {CONF_TRANSFER_PRICING: TRANSFER_FIXED},
+        SECTION_API_SETTINGS: {CONF_URL: "https://example.com", CONF_API_KEY: "dummy"},
+        SECTION_API_SETTINGS: {CONF_SCAN_INTERVAL: 300},
+        SECTION_BATTERY_SETTINGS: {CONF_BATTERY_CAPACITY: 20.0}
+    }
+
+    # 4️⃣ Patch validate to simulate validation error
+    with patch(
+        "custom_components.elisa_kotiakku.config_flow.validate",
+        return_value="api_already_configured",
+    ):
+        result = await hass.config_entries.options.async_configure(flow_id, user_input)
+
+    # 5️⃣ Assert the flow returns a form with the expected error
+    assert result["type"] == "form"
+    assert result["errors"]["base"] == "api_already_configured"

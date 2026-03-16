@@ -22,7 +22,7 @@ from .const import (
     CONF_POWER_UNIT,
     CONF_BATTERY_CAPACITY, 
     CONF_ADD_VAT,
-    CONF_VAT_PERCENTAGE,
+    DEFAULT_ADD_VAT,
     CONF_TRANSFER_PRICING,
     DEFAULT_ADD_VAT,
     DEFAULT_VAT_PERCENTAGE,
@@ -35,7 +35,9 @@ from .const import (
     DEFAULT_NAME,
     DEFAULT_POWER_UNIT,
     DEFAULT_BATTERY_CAPACITY,
-    TRANSFER_IGNORE
+    TRANSFER_IGNORE,
+    CONF_ADD_EXPORT_TRANSFER_FEE,
+    DEFAULT_ADD_EXPORT_TRANSFER_FEE
 )
 
 # Define the logger for this integration using the module name
@@ -101,7 +103,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         }
         
         new_data.setdefault(SECTION_CURRENCY_SETTINGS, {})
-        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_ADD_VAT, False)
+        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_ADD_VAT, DEFAULT_ADD_VAT)
+        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_ADD_EXPORT_TRANSFER_FEE, DEFAULT_ADD_EXPORT_TRANSFER_FEE)
         new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_TRANSFER_PRICING, TRANSFER_IGNORE)
         new_data[SECTION_API_SETTINGS].setdefault(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
 

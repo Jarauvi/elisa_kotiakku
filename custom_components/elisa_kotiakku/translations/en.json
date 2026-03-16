@@ -27,7 +27,7 @@
             "name": "Currency settings",
             "description": "Settings for savings estimations",
             "data": {
-              "add_tax": "Add tax",
+              "add_tax": "Add vat",
               "tax_percentage": "Tax (%)",
               "transfer_pricing": "Energy transfer price"
             }
@@ -124,7 +124,7 @@
             "name": "Currency settings",
             "description": "Settings for savings estimations",
             "data": {
-              "add_tax": "Add tax",
+              "add_tax": "Add vat",
               "tax_percentage": "Tax (%)",
               "transfer_pricing": "Energy transfer price"
             }
@@ -254,7 +254,8 @@
         "state": {
           "charging": "Charging",
           "discharging": "Discharging",
-          "idle": "Idle"
+          "idle": "Idle",
+          "disconnected": "Communication error"
         }
       }
     }

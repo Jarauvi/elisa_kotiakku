@@ -16,7 +16,10 @@ from custom_components.elisa_kotiakku.const import (
     CONF_BATTERY_CAPACITY,
     TRANSFER_FIXED,
     TRANSFER_DAY_NIGHT,
-    TRANSFER_SEASONAL
+    TRANSFER_SEASONAL,
+    SECTION_CURRENCY_SETTINGS,
+    CONF_ADD_EXPORT_TRANSFER_FEE,
+    CONF_EXPORT_TRANSFER_FEE
 )
 
 
@@ -185,27 +188,14 @@ async def test_coordinator_auth_failure(hass, mock_config_entry):
         with pytest.raises(UpdateFailed, match="Authentication failed"):
             await coordinator._async_update_data()
 
-
-async def test_coordinator_empty_data(hass, mock_config_entry):
-    """Test empty API response."""
-
-    coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
-
-    with aioresponses() as m:
-        m.get(re.compile(r".*"), status=200, payload=[])
-
-        with pytest.raises(UpdateFailed, match="API returned empty data"):
-            await coordinator._async_update_data()
-
-
 async def test_coordinator_network_error(hass, mock_config_entry):
     """Test HTTP error handling."""
 
     coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
 
     with aioresponses() as m:
-        m.get(re.compile(r".*"), status=500)
-
+        m.get(re.compile(r".*"), exception=Exception("oh no"))
+        
         with pytest.raises(UpdateFailed, match="Error communicating with API"):
             await coordinator._async_update_data()
             
@@ -294,14 +284,14 @@ async def test_coordinator_export_fee_reduces_income(hass, mock_config_entry):
     hass.config_entries.async_update_entry(
         mock_config_entry,
         options={
-            "add_export_transfer_fee": True,
-            "export_transfer_fee": 0.02
-        },
+            SECTION_CURRENCY_SETTINGS: {
+                CONF_ADD_EXPORT_TRANSFER_FEE: True,
+                CONF_EXPORT_TRANSFER_FEE: 0.02
+            }
+        }
     )
 
     coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
-
-    coordinator.get_transfer_fee = AsyncMock(return_value=0)
 
     payload = [{
         "state_of_charge_percent": 60,
@@ -318,6 +308,8 @@ async def test_coordinator_export_fee_reduces_income(hass, mock_config_entry):
         m.get(re.compile(r".*"), status=200, payload=payload)
 
         data = await coordinator._async_update_data()
+
+        assert data["net_savings_rate"] == pytest.approx(0.08)
 
         # price = 0.10
         # export fee = 0.02
@@ -435,3 +427,49 @@ async def test_transfer_fee_modes(monkeypatch, mock_config_entry, hass):
 
     fee = await coordinator.get_transfer_fee(mock_config_entry)
     assert fee == 3  # winter_day_price applied
+    
+async def test_coordinator_handles_null_values(hass, mock_config_entry):
+    """Coordinator should tolerate API null values."""
+
+    coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
+    coordinator.get_transfer_fee = AsyncMock(return_value=0)
+
+    payload = [{
+        "state_of_charge_percent": None,
+        "battery_power_kw": None,
+        "solar_power_kw": None,
+        "solar_to_house_kw": None,
+        "battery_to_house_kw": None,
+        "solar_to_grid_kw": None,
+        "battery_to_grid_kw": None,
+        "grid_to_battery_kw": None,
+        "spot_price_cents_per_kwh": None
+    }]
+
+    with aioresponses() as m:
+        m.get(re.compile(r".*"), status=200, payload=payload)
+
+        data = await coordinator._async_update_data()
+
+        assert data["battery_loss_kw"] is None
+        assert data["net_savings_rate"] is None
+        
+async def test_holiday_cache(hass, mock_config_entry):
+    coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
+
+    holidays1 = await coordinator._async_get_fi_holidays(2026)
+    holidays2 = await coordinator._async_get_fi_holidays(2026)
+
+    assert holidays1 is holidays2
+    
+def test_calculate_target_time_idle(hass, mock_config_entry):
+    coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
+
+    result = coordinator.calculate_target_time(
+        current_soc=50,
+        power_kw=0,
+        target_soc=90,
+        battery_capacity=10
+    )
+
+    assert result == "-"

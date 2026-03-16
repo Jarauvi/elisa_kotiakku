@@ -484,15 +484,18 @@ class KotiakkuBatteryStateSensor(KotiakkuSensor):
         if not data:
             return None
 
-        power_kw = float(data.get("battery_power_kw", 0))
+        if "battery_power_kw" in data and data["battery_power_kw"]:
+            power_kw = float(data.get("battery_power_kw", 0))
         
-        # Deadzone of 50W
-        if power_kw < -0.05:
-            return "charging"
-        elif power_kw > 0.05:
-            return "discharging"
+            # Deadzone of 50W
+            if power_kw < -0.05:
+                return "charging"
+            elif power_kw > 0.05:
+                return "discharging"
+            else:
+                return "idle"
         else:
-            return "idle"
+            return "disconnected"
 
     @property
     def icon(self):
