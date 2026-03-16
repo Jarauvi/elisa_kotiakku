@@ -99,20 +99,37 @@ This integration provides services to manage your long-term energy data:
 ## 📊 Available Sensors
 
 ### ⚡ Power Sensors (Current Flow)
-| Entity ID | Name (FI) | Description |
+| Entity ID (Example) | Name (FI) | Description |
 | :--- | :--- | :--- |
 | `battery_power_kw` | Akun kokonaisteho | Current battery charge (+) or discharge (-) |
 | `solar_power_kw` | Aurinkopaneelien kokonaisteho | Total current solar production |
 | `grid_power_kw` | Verkon kokonaisteho | Total current grid exchange |
 | `house_power_kw` | Kiinteistön kokonaiskulutus | Current total building consumption |
+| `solar_to_house_kw` | Aurinkopaneeleilta kiinteistölle | Solar power used directly by the house |
+| `solar_to_battery_kw` | Aurinkopaneeleilta akkuun | Solar power going into storage |
+| `solar_to_grid_kw` | Aurinkopaneeleilta verkkoon | Solar power being exported |
+| `grid_to_house_kw` | Verkosta kiinteistölle | Grid power used by the house |
+| `grid_to_battery_kw` | Verkosta akkuun | Grid power used to charge the battery |
+| `battery_to_house_kw` | Akusta kiinteistölle | Battery power used by the house |
+| `battery_to_grid_kw` | Akusta verkkoon | Battery power being exported |
 | `battery_loss_kw` | Akun häviöteho | Estimated power lost during conversion |
 
-### 📊 Energy Sensors (Cumulative Totals)
+### 📊 Energy Sensors (Cumulative Totals in kWh)
 | Entity ID | Name (FI) | Description |
 | :--- | :--- | :--- |
 | `house_energy_kwh` | Kiinteistön kokonaiskulutus | Total cumulative energy consumed |
+| `solar_energy_kwh` | Aurinkopaneelien kokonaistuotto | Total cumulative energy produced |
 | `total_grid_import_kwh` | Verkosta ostettu kokonaisenergia | Total energy imported from grid |
 | `total_grid_export_kwh` | Verkkoon myyty kokonaisenergia | Total energy exported to grid |
+| `total_battery_charge_kwh` | Akun kokonaislatausenergia | Total energy put into the battery |
+| `total_battery_discharge_kwh` | Akun kokonaispurkuenergia | Total energy taken from the battery |
+| `solar_to_house_kwh` | Aurinkopaneeleilta kiinteistölle | Total solar energy used by house |
+| `solar_to_battery_kwh` | Aurinkopaneeleilta akkuun | Total solar energy stored |
+| `solar_to_grid_kwh` | Aurinkopaneeleilta verkkoon | Total solar energy exported |
+| `grid_to_house_kwh` | Verkosta kiinteistölle | Total grid energy used by house |
+| `grid_to_battery_kwh` | Verkosta akkuun | Total grid energy stored |
+| `battery_to_house_kwh` | Akusta kiinteistölle | Total battery energy used by house |
+| `battery_to_grid_kwh` | Akusta verkkoon | Total battery energy exported |
 | `battery_loss_kwh` | Akun kokonaisenergiahäviö | Total energy lost in conversion |
 
 ### 🔋 Diagnostics & Battery State
@@ -120,9 +137,13 @@ This integration provides services to manage your long-term energy data:
 | :--- | :--- | :--- |
 | `state_of_charge_percent` | Akun varaustila | Battery charge level (0–100%) |
 | `battery_state` | Akun tila | *Lataa*, *Purkaa*, *Odottaa*, or *Yhteysvirhe* |
+| `battery_temperature_celsius` | Akun lämpötila | Internal battery temperature |
 | `battery_efficiency_ratio` | Akun kokonaishyötysuhde | Calculated round-trip efficiency |
+| `battery_charge_efficiency` | Latauksen hyötysuhde | Efficiency while charging (*ei lataa* if idle) |
+| `battery_discharge_efficiency` | Purkamisen hyötysuhde | Efficiency while discharging (*ei pura* if idle) |
 | `battery_cycle_count` | Akun lataussyklit | Calculated cycles based on nominal capacity |
 | `time_to_90_percent` | Ladattu 90% tasoon ajassa | Est. minutes until 90% SoC |
+| `time_to_15_percent` | Purettu 15% tasoon ajassa | Est. minutes until 15% SoC |
 
 ### 💶 Market Data & Savings
 | Entity ID | Name (FI) | Description |
