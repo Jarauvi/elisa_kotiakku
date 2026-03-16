@@ -268,19 +268,16 @@ class KotiakkuEnergySensor(RestoreEntity, KotiakkuSensor):
         to add (Power * Time) to the total state.
         """
 
-        if not self._restored:
-            return
-
-        # Get the timestamp of the last successful API update
-        now = dt_util.utcnow()
-
-        if self.coordinator.data is None:
+        if not self._restored or self.coordinator.data is None:
             return
 
         power_val = self.coordinator.data.get(self._power_key)
         if power_val is None:
             return
         power_val = abs(power_val)
+        
+        # Get the timestamp of the last successful API update
+        now = dt_util.utcnow()
 
         # Initial run sets the timestamp without adding energy
         if self._last_run is None:
@@ -542,6 +539,9 @@ class KotiakkuTotalSavingsSensor(KotiakkuSensor, RestoreEntity):
             return
 
         rate_val = self.coordinator.data.get(self._rate_key)
+        if rate_val is None:
+            return
+        
         now = dt_util.utcnow()
 
         # 2. Skip if it's the very first run to establish a baseline time
