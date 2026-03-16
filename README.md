@@ -173,4 +173,4 @@ This integration provides services to manage your long-term energy data:
 - [x] restructure config flow for better user experience
 
 ## ⚠️ Disclaimer
-This integration is a community project and is **not** affiliated with, endorsed by, or supported by Elisa. Use at your own risk. *Batteries not included.*
+This integration is a community project and is **not** affiliated with, endorsed by, or supported by Elisa. Use at your own risk. 
