@@ -1,8 +1,14 @@
 """Global fixtures for Elisa Kotiakku tests."""
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.elisa_kotiakku.const import DOMAIN
+
+@pytest.fixture(autouse=True)
+def silent_recorder_setup():
+    """Mock recorder setup to satisfy manifest dependencies."""
+    with patch("homeassistant.components.recorder.async_setup", return_value=True):
+        yield
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations):
