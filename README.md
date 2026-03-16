@@ -168,6 +168,7 @@ This integration provides services to manage your long-term energy data:
 - [x] add service to retrieve latest maximum energy/savings values if those are accidentally reset
 
 ### Under the hood
+- [ ] add seller's margin part for purchased energy
 - [x] migrate calculations from sensors to coordinator
 - [x] restructure config flow for better user experience
 
