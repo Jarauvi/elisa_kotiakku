@@ -270,19 +270,19 @@
           "description": "Fixed device"
         }
       }
-    }
-  },
-  "reset_accumulated_sensors": {
-    "name": "Reset accumulated sensors",
-    "description": "Resets all energy and savings sensors to zero for a specific device.",
-    "fields": {
-      "device_id": {
-        "name": "Elisa Kotiakku device",
-        "description": "The device to be reset."
-      },
-      "lookback_days": { 
-          "name": "Period for finding max value (days)", 
-          "description": "How many days to look for maximum value from history." 
+    },
+    "reset_accumulated_sensors": {
+      "name": "Reset accumulated sensors",
+      "description": "Resets all energy and savings sensors to zero for a specific device.",
+      "fields": {
+        "device_id": {
+          "name": "Elisa Kotiakku device",
+          "description": "The device to be reset."
+        },
+        "lookback_days": { 
+            "name": "Period for finding max value (days)", 
+            "description": "How many days to look for maximum value from history." 
+        }
       }
     }
   }
