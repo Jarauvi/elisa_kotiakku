@@ -1,5 +1,7 @@
 """Sensors for Elisa Kotiakku integration."""
 
+import logging
+from datetime import timedelta
 from homeassistant.util import dt as dt_util
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -14,6 +16,9 @@ from homeassistant.const import (
     PERCENTAGE,
 )
 
+from homeassistant.helpers import entity_registry as er
+from homeassistant.components.recorder import get_instance
+from homeassistant.components.recorder import history
 from homeassistant.helpers import entity_registry as er
 from homeassistant.const import UnitOfTime
 from homeassistant.helpers.entity import EntityCategory
@@ -31,6 +36,8 @@ from .const import (
     CONF_BATTERY_CAPACITY, 
     DEFAULT_BATTERY_CAPACITY,
     SECTION_BATTERY_SETTINGS,
+    SERVICE_SET_MAX_FROM_HISTORY,
+    SERVICE_RESET_SENSORS,
     get_config_parameter
 )
 
@@ -73,6 +80,8 @@ ICON_MAP = {
     "net_savings_rate": "mdi:calculator",
     "battery_loss_kwh": "mdi:heat-wave"
     }
+
+_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, entry, async_add_entities):
     """Set up sensor platform from a ConfigEntry.
@@ -168,6 +177,76 @@ async def async_setup_entry(hass, entry, async_add_entities):
     # Register entities in HA
     async_add_entities(sensors)
 
+    async def handle_set_max_history(call):
+        """Find the max value in the recorder history."""
+        device_id = call.data.get("device_id")
+        days = int(call.data.get("lookback_days", 1))
+        ent_reg = er.async_get(hass)
+        all_entries = er.async_entries_for_device(ent_reg, device_id)
+        target_entity_ids = [entry.entity_id for entry in all_entries]
+
+        start_time = dt_util.utcnow() - timedelta(days=days)
+        recorder_instance = get_instance(hass)
+
+        for sensor in sensors:
+            if sensor.entity_id in target_entity_ids and isinstance(sensor, (KotiakkuEnergySensor, KotiakkuTotalSavingsSensor)):
+                _LOGGER.info("Querying history for: %s (%s days)", sensor.entity_id, days)
+                
+                # Fetch history with explicit start_time
+                history_list = await recorder_instance.async_add_executor_job(
+                    history.get_significant_states, 
+                    hass, 
+                    start_time, 
+                    None, 
+                    [sensor.entity_id] # Pass as a list
+                )
+
+                if not history_list or sensor.entity_id not in history_list:
+                    _LOGGER.warning("No history found in database for %s. (Result was %s)", sensor.entity_id, history_list)
+                    continue
+
+                states = history_list[sensor.entity_id]
+                values = []
+                for s in states:
+                    try:
+                        if s.state not in ("unknown", "unavailable", None):
+                            values.append(float(s.state))
+                    except (ValueError, TypeError):
+                        continue
+
+                if values:
+                    max_val = max(values)
+                    _LOGGER.info("Found max value %s for %s. Updating...", max_val, sensor.entity_id)
+                    sensor.set_internal_state(max_val)
+                else:
+                    _LOGGER.warning("History entries found for %s, but no valid numeric values.", sensor.entity_id)
+
+    async def handle_reset_sensors(call):
+        """Force all energy and savings sensors back to zero."""
+        device_id = call.data.get("device_id")
+        ent_reg = er.async_get(hass)
+        all_entries = er.async_entries_for_device(ent_reg, device_id)
+        target_entity_ids = [entry.entity_id for entry in all_entries]
+
+        # Filter for the sensors we want to reset
+        target_sensors = [
+            s for s in sensors 
+            if s.entity_id in target_entity_ids and 
+            isinstance(s, (KotiakkuEnergySensor, KotiakkuTotalSavingsSensor))
+        ]
+
+        for sensor in target_sensors:
+            _LOGGER.info("Resetting %s to 0.0", sensor.entity_id)
+            sensor.set_internal_state(0.0)
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_SET_MAX_FROM_HISTORY, handle_set_max_history
+    )
+    
+    hass.services.async_register(
+        DOMAIN, SERVICE_RESET_SENSORS, handle_reset_sensors
+    )
+
 class KotiakkuSensor(CoordinatorEntity, SensorEntity):
     """Base sensor class for Elisa Kotiakku.
     
@@ -244,6 +323,11 @@ class KotiakkuEnergySensor(RestoreEntity, KotiakkuSensor):
         self._last_run = None
         self._restored = False
         self._direction = direction
+
+    def set_internal_state(self, value: float):
+        """Force update the internal state variable."""
+        self._state = value
+        self.async_write_ha_state()
 
     async def async_added_to_hass(self):
         """Called when entity is added to HA. Restores previous state from database."""
@@ -517,6 +601,11 @@ class KotiakkuTotalSavingsSensor(KotiakkuSensor, RestoreEntity):
         self._state = 0.0  # Initialize to 0.0
         self._last_run = None
         self._restored = False
+
+    def set_internal_state(self, value: float):
+        """Force update the internal state variable."""
+        self._state = value
+        self.async_write_ha_state()
 
     async def async_added_to_hass(self):
         """Restore previous savings total from the database."""

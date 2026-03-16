@@ -81,6 +81,11 @@ DEFAULT_CHEAPER_SUNDAY_RATE = False
 CONF_CHEAPER_HOLIDAY_RATE = "cheaper_holiday_rate"
 DEFAULT_CHEAPER_HOLIDAY_RATE = False
 
+# === SERVICES ===
+SERVICE_SET_MAX_FROM_HISTORY = "set_max_from_history"
+SERVICE_RESET_SENSORS = "reset_accumulated_sensors"
+
+# === HELPERS ===
 def get_config_parameter(config_entry, section, key, fallback):
     """
     Look up a value in config_entry.options first (nested),

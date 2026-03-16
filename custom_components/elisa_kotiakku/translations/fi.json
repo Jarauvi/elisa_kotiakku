@@ -251,5 +251,31 @@
         }
       }
     }
+  },
+  "services": {
+    "set_max_from_history": {
+      "name": "Palauta suurimmat arvo historiasta",
+      "description": "Etsii korkeimmat lukemat ja palauttaa energia- ja säästömittarit näihin arvoihin.",
+      "fields": {
+        "device_id": {
+          "name": "Elisa Kotiakku -laite",
+          "description": "Korjattava laite"
+        }
+      }
+    },
+    "reset_accumulated_sensors": {
+      "name": "Nollaa kertymä-sensorit",
+      "description": "Nollaa kaikki valitun laitteen energia- ja säästötiedot nollaan.",
+      "fields": {
+        "device_id": {
+          "name": "Elisa Kotiakku -laite",
+          "description": "Laite, jonka tiedot nollataan."
+        },
+        "lookback_days": { 
+          "name": "Tarkastelujakso (päivää)", 
+          "description": "Kuinka monta päivää historiasta etsitään suurinta arvoa." 
+        }
+      }
+    }
   }
 }

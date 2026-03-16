@@ -1,0 +1,33 @@
+set_max_from_history:
+  name: "Set max from history"
+  description: "Scans history and resets sensors to their highest recorded values for a selected device or area."
+  fields:
+    device_id:
+      name: "Elisa Kotiakku device"
+      description: "Device to be fixed"
+      required: true
+      selector:
+        device:
+          integration: elisa_kotiakku
+    lookback_days:
+      name: "Lookback period (days)"
+      description: "How many days of history to scan for the maximum value."
+      default: 7
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 365
+          unit_of_measurement: "d"
+          mode: box
+reset_accumulated_sensors:
+  name: "Reset accumulated sensors"
+  description: "Resets all energy and savings sensors to zero for a specific device."
+  fields:
+    device_id:
+      name: "Elisa Kotiakku device"
+      description: "Device to be reset"
+      required: true
+      selector:
+        device:
+          integration: elisa_kotiakku
