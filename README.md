@@ -156,6 +156,7 @@ This integration provides services to manage your long-term energy data:
 
 ## 🗺️ Roadmap
 ### Sensors
+- [ ] add breakdown of costs/savings to total savings sensor attributes
 - [x] add total savings sensor
 - [x] add total energy loss sensor
 - [x] add efficiency ratio sensor
