@@ -91,12 +91,13 @@ def get_config_parameter(config_entry, section, key, fallback):
     Look up a value in config_entry.options first (nested),
     then config_entry.data (nested), then fallback.
     """
-    if section in config_entry.options:
-        if key in config_entry.options[section]:
-            return config_entry.options[section][key]
-            
-    if section in config_entry.data:
-        if key in config_entry.data[section]:
-            return config_entry.data[section][key]
+    if config_entry:
+        if section in config_entry.options:
+            if key in config_entry.options[section]:
+                return config_entry.options[section][key]
+                
+        if section in config_entry.data:
+            if key in config_entry.data[section]:
+                return config_entry.data[section][key]
             
     return fallback

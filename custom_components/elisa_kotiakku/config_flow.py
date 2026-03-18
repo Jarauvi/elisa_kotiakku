@@ -137,6 +137,15 @@ async def validate(hass, entries, data, current_entry_id=None):
 class ElisaKotiakkuCommonSteps:
     """Shared logic for both Config and Options flows."""
 
+    async def _async_create_entry_with_title(self, data):
+        """Helper to create entry with correct title logic."""
+        title = data.get(SECTION_BATTERY_SETTINGS, {}).get(CONF_NAME, "kotiakku")
+        
+        if isinstance(self, config_entries.OptionsFlow):
+            return self.async_create_entry(title="", data=data)
+        
+        return self.async_create_entry(title=title, data=data)
+
     async def async_step_fixed_transfer(self, user_input=None):
         config_entry = getattr(self, "config_entry", None)
         
@@ -144,7 +153,7 @@ class ElisaKotiakkuCommonSteps:
             data = copy.deepcopy(self._base_config)
             data["currency_settings"].update(user_input)
             
-            return self.async_create_entry(title="", data=data)
+            return await self._async_create_entry_with_title(data=data)
             
         if config_entry:
             current_config = {
@@ -165,7 +174,7 @@ class ElisaKotiakkuCommonSteps:
                         min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                     )
                 ),
-                vol.Optional(CONF_ADD_ELECTRICITY_TAX, default=DEFAULT_ADD_ELECTRICITY_TAX): bool,
+                vol.Optional(CONF_ADD_ELECTRICITY_TAX, default=get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_ELECTRICITY_TAX, DEFAULT_ADD_ELECTRICITY_TAX)): bool,
                 vol.Required(
                     CONF_ELECTRICITY_TAX, 
                     default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX))
@@ -174,7 +183,7 @@ class ElisaKotiakkuCommonSteps:
                         min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                     )
                 ),
-                vol.Optional(CONF_ADD_EXPORT_TRANSFER_FEE, default=DEFAULT_ADD_EXPORT_TRANSFER_FEE): bool,
+                vol.Optional(CONF_ADD_EXPORT_TRANSFER_FEE, default=get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_EXPORT_TRANSFER_FEE, DEFAULT_ADD_EXPORT_TRANSFER_FEE)): bool,
                 vol.Required(
                     CONF_EXPORT_TRANSFER_FEE, 
                     default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE))
@@ -193,7 +202,7 @@ class ElisaKotiakkuCommonSteps:
             data = copy.deepcopy(self._base_config)
             data["currency_settings"].update(user_input)
             
-            return self.async_create_entry(title="", data=data)
+            return await self._async_create_entry_with_title(data=data)
             
         if config_entry:
             current_config = {
@@ -228,7 +237,7 @@ class ElisaKotiakkuCommonSteps:
                     min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                 )
             ),
-            vol.Optional(CONF_ADD_ELECTRICITY_TAX, default=DEFAULT_ADD_ELECTRICITY_TAX): bool,
+            vol.Optional(CONF_ADD_ELECTRICITY_TAX, default=get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_ELECTRICITY_TAX, DEFAULT_ADD_ELECTRICITY_TAX)): bool,
             vol.Required(
                 CONF_ELECTRICITY_TAX, 
                 default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX))
@@ -237,7 +246,7 @@ class ElisaKotiakkuCommonSteps:
                     min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                 )
             ),
-            vol.Optional(CONF_ADD_EXPORT_TRANSFER_FEE, default=DEFAULT_ADD_EXPORT_TRANSFER_FEE): bool,
+            vol.Optional(CONF_ADD_EXPORT_TRANSFER_FEE, default=get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_EXPORT_TRANSFER_FEE, DEFAULT_ADD_EXPORT_TRANSFER_FEE)): bool,
             vol.Required(
                 CONF_EXPORT_TRANSFER_FEE, 
                 default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE))
@@ -260,7 +269,7 @@ class ElisaKotiakkuCommonSteps:
             data = copy.deepcopy(self._base_config)
             data["currency_settings"].update(user_input)
             
-            return self.async_create_entry(title="", data=data)
+            return await self._async_create_entry_with_title(data=data)
             
         if config_entry:
             current_config = {
@@ -311,15 +320,33 @@ class ElisaKotiakkuCommonSteps:
                     min=0, max=10, step=0.1, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
                 )
             ),
-            vol.Optional(CONF_CHEAPER_SUNDAY_RATE, default=DEFAULT_CHEAPER_SUNDAY_RATE): bool,
-            vol.Optional(CONF_CHEAPER_HOLIDAY_RATE, default=DEFAULT_CHEAPER_HOLIDAY_RATE): bool,
+            vol.Optional(CONF_CHEAPER_SUNDAY_RATE, default=get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_CHEAPER_SUNDAY_RATE, DEFAULT_CHEAPER_SUNDAY_RATE)): bool,
+            vol.Optional(CONF_CHEAPER_HOLIDAY_RATE, default=get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_CHEAPER_HOLIDAY_RATE, DEFAULT_CHEAPER_HOLIDAY_RATE)): bool,
+            vol.Optional(CONF_ADD_ELECTRICITY_TAX, default=get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_ELECTRICITY_TAX, DEFAULT_ADD_ELECTRICITY_TAX)): bool,
+            vol.Required(
+                CONF_ELECTRICITY_TAX, 
+                default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX))
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                )
+            ),
+            vol.Optional(CONF_ADD_EXPORT_TRANSFER_FEE, default=get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_EXPORT_TRANSFER_FEE, DEFAULT_ADD_EXPORT_TRANSFER_FEE)): bool,
+            vol.Required(
+                CONF_EXPORT_TRANSFER_FEE, 
+                default=str(get_config_parameter(config_entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE))
+            ): selector.NumberSelector(
+                selector.NumberSelectorConfig(
+                    min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                )
+            )
         })
 
         return self.async_show_form(
             step_id="seasonal_transfer",
             data_schema=schema,
         )
-class ElisaKotiakkuConfigFlow(config_entries.ConfigFlow, ElisaKotiakkuCommonSteps, domain=DOMAIN):
+class ElisaKotiakkuConfigFlow(ElisaKotiakkuCommonSteps, config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Elisa Kotiakku."""
     
     VERSION = 2
