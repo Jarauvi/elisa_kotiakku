@@ -71,6 +71,8 @@ ICON_MAP = {
     "total_battery_charge_kwh": "mdi:battery-charging",
     "total_grid_export_kwh": "mdi:transmission-tower-import",
     "spot_price_cents_per_kwh":  "mdi:cash-fast",
+    "total_price_cents_per_kwh": "mdi:cash-fast",
+    "battery_stored_energy_price": "mdi:cash-fast",
     "battery_efficiency_ratio": "mdi:percent",
     "battery_charge_efficiency": "mdi:battery-charging-70",
     "battery_discharge_efficiency": "mdi:battery-arrow-down",
@@ -139,6 +141,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
         KotiakkuTemperatureSensor(coordinator, "battery_temperature_celsius", device_id, device_slug, entry),
         KotiakkuBatterySensor(coordinator, "state_of_charge_percent", device_id, device_slug, entry),
         KotiakkuPriceSensor(coordinator, "spot_price_cents_per_kwh", device_id, device_slug, entry),
+        KotiakkuPriceSensor(coordinator, "total_price_cents_per_kwh", device_id, device_slug, entry),
+        KotiakkuPriceSensor(coordinator, "battery_stored_energy_price", device_id, device_slug, entry),
         KotiakkuChargeEfficiencySensor(coordinator, "battery_charge_efficiency", device_id, device_slug, entry),
         KotiakkuDischargeEfficiencySensor(coordinator, "battery_discharge_efficiency", device_id, device_slug, entry),
         KotiakkuEfficiencySensor(

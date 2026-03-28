@@ -71,6 +71,10 @@ from .const import (
     DEFAULT_CHEAPER_HOLIDAY_RATE,
     CONF_CHEAPER_SUNDAY_RATE,
     DEFAULT_CHEAPER_SUNDAY_RATE,
+    CONF_ADD_SPOT_PRICE_MARGIN,
+    DEFAULT_ADD_SPOT_PRICE_MARGIN,
+    CONF_SPOT_PRICE_MARGIN,
+    DEFAULT_SPOT_PRICE_MARGIN,
     get_config_parameter
 )
 _LOGGER = logging.getLogger(__name__)
@@ -85,8 +89,9 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
         self.api_url = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_URL, DEFAULT_URL)
         self.api_key = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_API_KEY, "")
         self._holiday_cache = {}
-        
         scan_interval = get_config_parameter(entry, SECTION_API_SETTINGS, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+        self.last_soc = 0
+        self.stored_price = 0
 
         super().__init__(
             hass,
@@ -225,12 +230,13 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 try:
                     price_eur_kwh = data.get("spot_price_cents_per_kwh", 0) / 100
                     transfer_fee_eur_kwh = await self.get_transfer_fee(self.entry) / 100
+                    spot_price_margin = await self.get_spot_price_margin(self.entry) / 100
                 
                     vat_mult = 1.0
                     if get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_VAT, DEFAULT_ADD_VAT):
                         vat_mult = (1 + (get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_VAT_PERCENTAGE, DEFAULT_VAT_PERCENTAGE)/100))
                     
-                    buy_rate = (price_eur_kwh + transfer_fee_eur_kwh) * vat_mult
+                    buy_rate = (price_eur_kwh + spot_price_margin + transfer_fee_eur_kwh) * vat_mult
                     solar_savings = data.get("solar_to_house_kw", 0) * buy_rate
                     battery_savings = data.get("battery_to_house_kw", 0) * buy_rate
 
@@ -238,14 +244,35 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                     if get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_EXPORT_TRANSFER_FEE, DEFAULT_ADD_EXPORT_TRANSFER_FEE):
                         export_fee = get_config_parameter(self.entry, SECTION_CURRENCY_SETTINGS, CONF_EXPORT_TRANSFER_FEE, DEFAULT_EXPORT_TRANSFER_FEE)
                     
-                    sell_rate = price_eur_kwh - export_fee
+                    sell_rate = price_eur_kwh + spot_price_margin - export_fee
                     export_income = (data.get("solar_to_grid_kw", 0) + data.get("battery_to_grid_kw", 0)) * sell_rate
                     charging_cost = data.get("grid_to_battery_kw", 0) * buy_rate
                     
                     data["net_savings_rate"] = solar_savings + battery_savings + export_income - charging_cost
+                    data["total_price_cents_per_kwh"] = (price_eur_kwh + spot_price_margin + transfer_fee_eur_kwh) * 100 * vat_mult
                     
                 except TypeError:
                     data["net_savings_rate"] = None
+                    data["total_price_cents_per_kwh"] = None
+                    
+                try:
+                    current_soc = data.get("state_of_charge_percent", 0)
+                    if not hasattr(self, "last_soc"):
+                        self.last_soc = current_soc
+                        self.stored_price = buy_rate * 100
+                    
+                    battery_power = data.get("battery_power_kw", 0)
+                    
+                    if battery_power < 0 and current_soc > self.last_soc:
+                        added_soc = current_soc - self.last_soc
+                        new_total_cost = (self.last_soc * self.stored_price) + (added_soc * buy_rate * 100)
+                        self.stored_price = new_total_cost / current_soc
+                    
+                    self.last_soc = current_soc
+                    data["battery_stored_energy_price"] = round(self.stored_price, 2)
+                    
+                except (TypeError, ZeroDivisionError):
+                    data["battery_stored_energy_price"] = 0
                     
                 # Charge efficiency
                 try:
@@ -348,6 +375,13 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
             return f"{hours}h {mins}m"
         return f"{mins}m"
 
+    async def get_spot_price_margin(self, entry):
+        add_margin = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_SPOT_PRICE_MARGIN, DEFAULT_ADD_SPOT_PRICE_MARGIN)
+        if add_margin:            
+            return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX)
+        
+        return 0.0
+        
     async def get_transfer_fee(self, entry):
         mode = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_TRANSFER_PRICING, DEFAULT_TRANSFER_PRICING)
         add_electricity_tax = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_ELECTRICITY_TAX, DEFAULT_ADD_ELECTRICITY_TAX)

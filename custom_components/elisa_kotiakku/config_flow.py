@@ -73,6 +73,10 @@ from .const import (
     DEFAULT_CHEAPER_SUNDAY_RATE,
     CONF_CHEAPER_HOLIDAY_RATE,
     DEFAULT_CHEAPER_HOLIDAY_RATE,
+    CONF_ADD_SPOT_PRICE_MARGIN,
+    DEFAULT_ADD_SPOT_PRICE_MARGIN,
+    CONF_SPOT_PRICE_MARGIN,
+    DEFAULT_SPOT_PRICE_MARGIN,
     get_config_parameter
     
     
@@ -349,7 +353,7 @@ class ElisaKotiakkuCommonSteps:
 class ElisaKotiakkuConfigFlow(ElisaKotiakkuCommonSteps, config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Elisa Kotiakku."""
     
-    VERSION = 2
+    VERSION = 3
 
     @staticmethod
     @callback
@@ -411,6 +415,15 @@ class ElisaKotiakkuConfigFlow(ElisaKotiakkuCommonSteps, config_entries.ConfigFlo
                 ),
                 vol.Required(SECTION_CURRENCY_SETTINGS): section(
                     vol.Schema({
+                        vol.Optional(CONF_ADD_SPOT_PRICE_MARGIN, default=DEFAULT_ADD_SPOT_PRICE_MARGIN): bool,
+                        vol.Optional(
+                            CONF_SPOT_PRICE_MARGIN, 
+                            default=DEFAULT_SPOT_PRICE_MARGIN
+                        ): selector.NumberSelector(
+                            selector.NumberSelectorConfig(
+                                min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                            )
+                        ),                        
                         vol.Optional(CONF_ADD_VAT, default=DEFAULT_ADD_VAT): bool,
                         vol.Optional(CONF_VAT_PERCENTAGE, default=DEFAULT_VAT_PERCENTAGE): vol.All(
                             vol.Coerce(float), vol.Range(min=0, max=30)

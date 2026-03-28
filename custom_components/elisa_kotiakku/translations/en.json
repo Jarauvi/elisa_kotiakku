@@ -27,6 +27,8 @@
             "name": "Currency settings",
             "description": "Settings for savings estimations",
             "data": {
+              "add_spot_price_margin": "Add spot price margin",
+              "spot_price_margin": "Spot price margin (c/kWh)",
               "add_tax": "Add vat",
               "tax_percentage": "Tax (%)",
               "transfer_pricing": "Energy transfer price"
@@ -212,6 +214,8 @@
       "total_grid_export_kwh": { "name": "Total grid export" },
       "total_grid_import_kwh": { "name": "Total grid import" },
       "spot_price_cents_per_kwh": { "name": "Spot price" },
+      "total_price_cents_per_kwh": { "name": "Total price" },
+      "battery_stored_energy_price": { "name": "Value of stored energy" },
       "battery_efficiency_ratio": { "name": "Battery round-trip efficiency" },
       "battery_charge_efficiency": {
         "name": "Charging efficiency",

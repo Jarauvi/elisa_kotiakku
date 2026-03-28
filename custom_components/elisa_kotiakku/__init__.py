@@ -13,6 +13,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from .coordinator import KotiakkuDataUpdateCoordinator
 from .const import (
+    CONF_ADD_SPOT_PRICE_MARGIN,
+    CONF_SPOT_PRICE_MARGIN,
+    DEFAULT_ADD_SPOT_PRICE_MARGIN,
+    DEFAULT_SPOT_PRICE_MARGIN,
     DOMAIN, 
     PLATFORMS,
     CONF_NAME, 
@@ -115,6 +119,19 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         )
 
         _LOGGER.info("Migration to version 2 successful")
+    
+    if config_entry.version == 2:
+        new_data = config_entry.data
+        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_ADD_SPOT_PRICE_MARGIN, DEFAULT_ADD_SPOT_PRICE_MARGIN)
+        new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_SPOT_PRICE_MARGIN, DEFAULT_SPOT_PRICE_MARGIN)
+        
+        hass.config_entries.async_update_entry(
+            config_entry,
+            data=new_data,
+            version=3,
+        )
+        
+        _LOGGER.info("Migration to version 3 successful")
 
     return True
 

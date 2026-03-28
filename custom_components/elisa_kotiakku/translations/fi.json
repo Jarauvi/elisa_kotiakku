@@ -27,6 +27,8 @@
             "name": "Säästömittausten asetukset",
             "description": "Asetukset säästöjen laskentaa varten",
             "data": {
+              "add_spot_price_margin": "Lisää pörssisähköön marginaali",
+              "spot_price_margin": "Marginaali (c/kWh)",
               "add_tax": "Lisää hintoihin arvonlisävero",
               "tax_percentage": "Vero (%)",
               "transfer_pricing": "Sähkönsiirto"
@@ -216,6 +218,8 @@
       "total_grid_export_kwh": { "name": "Verkkoon myyty kokonaisenergia" },
       "total_grid_import_kwh": { "name": "Verkosta ostettu kokonaisenergia" },
       "spot_price_cents_per_kwh": { "name": "Pörssisähkön hinta" },
+      "total_price_cents_per_kwh": { "name": "Kokonaishinta" },
+      "battery_stored_energy_price": { "name": "Akkuun varastoidun energian hinta" },
       "battery_efficiency_ratio": { "name": "Akun kokonais­hyötysuhde" },
       "battery_charge_efficiency": { 
         "name": "Latauksen hyötysuhde",
