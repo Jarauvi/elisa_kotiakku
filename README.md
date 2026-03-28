@@ -73,7 +73,7 @@
 #### **Section: Currency & Pricing**
 | Option | Description |
 | :--- | :--- |
-| **Add spot** | Include seller's spot margin to cost calculations |
+| **Add spot margin** | Include seller's spot margin to cost calculations |
 | **Spot margin** | Spot margin (`c/kWh`)
 | **Add VAT** | Include Value Added Tax in cost calculations. |
 | **VAT %** | Your local VAT rate (e.g., **25.5%** in Finland). |
