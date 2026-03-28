@@ -112,7 +112,7 @@ async def test_migrate_entry(hass, mock_config_entry):
 
     # Assert migration worked
     assert result is True
-    assert mock_config_entry.version == 2
+    assert mock_config_entry.version == 3
     assert "battery_settings" in mock_config_entry.data
     assert "api_settings" in mock_config_entry.data
     assert "currency_settings" in mock_config_entry.data
