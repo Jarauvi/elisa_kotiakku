@@ -254,25 +254,42 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 except TypeError:
                     data["net_savings_rate"] = None
                     data["total_price_cents_per_kwh"] = None
-                    
+                 
+                # Stored energy price   
                 try:
                     current_soc = data.get("state_of_charge_percent", 0)
+                    
                     if not hasattr(self, "last_soc"):
                         self.last_soc = current_soc
-                        self.stored_price = buy_rate * 100
+                        self.stored_price = 0.0
                     
-                    battery_power = data.get("battery_power_kw", 0)
-                    
-                    if battery_power < 0 and current_soc > self.last_soc:
-                        added_soc = current_soc - self.last_soc
-                        new_total_cost = (self.last_soc * self.stored_price) + (added_soc * buy_rate * 100)
-                        self.stored_price = new_total_cost / current_soc
-                    
+                    # Calculate how much energy was added since last update (in kWh)
+                    battery_capacity = get_config_parameter(self.entry, SECTION_BATTERY_SETTINGS, CONF_BATTERY_CAPACITY, DEFAULT_BATTERY_CAPACITY)
+                    added_energy_kwh = max(0, (current_soc - self.last_soc) / 100.0 * battery_capacity)
+
+                    if added_energy_kwh > 0:
+                        # Identify the mix of energy sources
+                        solar_in = data.get("solar_to_battery_kw", 0)
+                        grid_in = data.get("grid_to_battery_kw", 0)
+                        total_in = solar_in + grid_in
+                        
+                        if total_in > 0:
+                            # Calculate the weighted price of the new energy being added
+                            # Solar is 0 cents, grid is buy_rate * 100
+                            new_energy_price = ( (solar_in * 0) + (grid_in * buy_rate * 100) ) / total_in
+                            
+                            # Update the total stored average price
+                            prev_energy_kwh = (self.last_soc / 100.0) * battery_capacity
+                            new_total_price = ((prev_energy_kwh * self.stored_price) + (added_energy_kwh * new_energy_price)) / (prev_energy_kwh + added_energy_kwh)
+                            
+                            self.stored_price = new_total_price
+
+                    # Update persistence
                     self.last_soc = current_soc
                     data["battery_stored_energy_price"] = round(self.stored_price, 2)
                     
                 except (TypeError, ZeroDivisionError):
-                    data["battery_stored_energy_price"] = 0
+                    data["battery_stored_energy_price"] = getattr(self, "stored_price", 0)
                     
                 # Charge efficiency
                 try:

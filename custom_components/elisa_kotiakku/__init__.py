@@ -120,7 +120,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
         _LOGGER.info("Migration to version 2 successful")
     
-    if config_entry.version == 2:
+    if config_entry.version < 3:
         new_data = config_entry.data
         new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_ADD_SPOT_PRICE_MARGIN, DEFAULT_ADD_SPOT_PRICE_MARGIN)
         new_data[SECTION_CURRENCY_SETTINGS].setdefault(CONF_SPOT_PRICE_MARGIN, DEFAULT_SPOT_PRICE_MARGIN)

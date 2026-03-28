@@ -503,6 +503,15 @@ class ElisaKotiakkuOptionsFlow(config_entries.OptionsFlow, ElisaKotiakkuCommonSt
                 ),
                 vol.Required(SECTION_CURRENCY_SETTINGS): section(
                     vol.Schema({
+                        vol.Optional(CONF_ADD_SPOT_PRICE_MARGIN, default=bool(get_config_parameter(conf, SECTION_CURRENCY_SETTINGS, CONF_ADD_SPOT_PRICE_MARGIN, DEFAULT_ADD_SPOT_PRICE_MARGIN))): bool,
+                        vol.Optional(
+                            CONF_SPOT_PRICE_MARGIN, 
+                            default=str(get_config_parameter(conf, SECTION_CURRENCY_SETTINGS, CONF_SPOT_PRICE_MARGIN, DEFAULT_SPOT_PRICE_MARGIN))
+                        ): selector.NumberSelector(
+                            selector.NumberSelectorConfig(
+                                min=0, max=10, step=0.001, mode=selector.NumberSelectorMode.BOX, unit_of_measurement="c/kWh"
+                            )
+                        ),   
                         vol.Optional(CONF_ADD_VAT, default=bool(get_config_parameter(conf, SECTION_CURRENCY_SETTINGS, CONF_ADD_VAT, DEFAULT_ADD_VAT))): bool,
                         vol.Optional(CONF_VAT_PERCENTAGE, default=str(get_config_parameter(conf, SECTION_CURRENCY_SETTINGS, CONF_VAT_PERCENTAGE, DEFAULT_VAT_PERCENTAGE))): vol.All(
                             vol.Coerce(float), vol.Range(min=0, max=30)
