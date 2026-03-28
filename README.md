@@ -15,7 +15,7 @@
   *Monitor solar production, battery health, and real-time energy costs. Batteries not included.*
 
   **New!** Check out the [elisa_kotiakku_cards](https://github.com/Jarauvi/elisa_kotiakku_cards) repository for custom UI.
-
+  
   <img src="https://github.com/Jarauvi/elisa_kotiakku/blob/main/images/kotiakku_diagnostics_card.png?raw=true" width="400">
 </div>
 
@@ -73,6 +73,8 @@
 #### **Section: Currency & Pricing**
 | Option | Description |
 | :--- | :--- |
+| **Add spot** | Include seller's spot margin to cost calculations |
+| **Spot margin** | Spot margin (`c/kWh`)
 | **Add VAT** | Include Value Added Tax in cost calculations. |
 | **VAT %** | Your local VAT rate (e.g., **25.5%** in Finland). |
 | **Transfer Pricing** | `Fixed`, `Day/Night`, `Seasonal`, or `Ignore`. |
@@ -151,12 +153,15 @@ This integration provides services to manage your long-term energy data:
 | `spot_price_cents_per_kwh` | Pörssisähkön hinta | Current market spot price |
 | `net_savings_rate` | Säästöt / tunti | Current financial impact in €/h |
 | `total_savings_eur` | Kumuloituvat säästöt | Total financial savings since installation |
+| `battery_stored_energy_price` | Akkuun varastoidun energian hinta | Average price of charged to battery |
+| `total_price_cents_per_kwh` | Kokonaishinta (spot + sähkönsiirto) | Total price with energy price + transfer + taxes |
 
 ---
 
 ## 🗺️ Roadmap
 ### Sensors
-- [ ] add breakdown of costs/savings to total savings sensor attributes
+- [x] add battery energy price sensor
+- [x] add total price sensor
 - [x] add total savings sensor
 - [x] add total energy loss sensor
 - [x] add efficiency ratio sensor
@@ -169,7 +174,7 @@ This integration provides services to manage your long-term energy data:
 - [x] add service to retrieve latest maximum energy/savings values if those are accidentally reset
 
 ### Under the hood
-- [ ] add seller's margin part for purchased energy
+- [x] add seller's margin part for purchased energy
 - [x] migrate calculations from sensors to coordinator
 - [x] restructure config flow for better user experience
 
