@@ -105,6 +105,8 @@ This integration provides services to manage your long-term energy data:
 | :--- | :--- | :--- |
 | `battery_power_kw` | Akun kokonaisteho | Current battery charge (+) or discharge (-) |
 | `solar_power_kw` | Aurinkopaneelien kokonaisteho | Total current solar production |
+| `solar_array_1_power_kw` | Aurinkopaneeliketjun 1 teho | Solar array 1 power |
+| `solar_array_2_power_kw` | Aurinkopaneeliketjun 2 teho | Solar array 2 power |
 | `grid_power_kw` | Verkon kokonaisteho | Total current grid exchange |
 | `house_power_kw` | Kiinteistön kokonaiskulutus | Current total building consumption |
 | `solar_to_house_kw` | Aurinkopaneeleilta kiinteistölle | Solar power used directly by the house |
