@@ -193,6 +193,8 @@
       "battery_temperature_celsius": { "name": "Battery temperature" },
       "state_of_charge_percent": { "name": "State of charge" },
       "solar_power_kw": { "name": "Solar power" },
+      "solar_array_1_power_kw": { "name": "Solar array 1 power" },
+      "solar_array_2_power_kw": { "name": "Solar array 2 power" },
       "grid_power_kw": { "name": "Grid power" },
       "house_power_kw": { "name": "House power consumption" },
       "solar_to_house_kw": { "name": "Solar power to house" },

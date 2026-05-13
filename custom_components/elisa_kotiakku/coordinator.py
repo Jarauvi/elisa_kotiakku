@@ -144,6 +144,8 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                 power_keys = [
                     "battery_power_kw", 
                     "solar_power_kw", 
+                    "solar_array_1_power_kw",
+                    "solar_array_2_power_kw",
                     "grid_power_kw",
                     "house_power_kw",
                     "solar_to_house_kw",
