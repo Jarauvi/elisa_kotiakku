@@ -107,6 +107,8 @@ This integration provides services to manage your long-term energy data:
 | `solar_power_kw` | Aurinkopaneelien kokonaisteho | Total current solar production |
 | `solar_array_1_power_kw` | Aurinkopaneelikentän 1 teho | Solar array 1 power |
 | `solar_array_2_power_kw` | Aurinkopaneelikentän 2 teho | Solar array 2 power |
+| `solar_array_3_power_kw` | Aurinkopaneelikentän 3 teho | Solar array 3 power |
+| `solar_array_4_power_kw` | Aurinkopaneelikentän 4 teho | Solar array 4 power |
 | `grid_power_kw` | Verkon kokonaisteho | Total current grid exchange |
 | `house_power_kw` | Kiinteistön kokonaiskulutus | Current total building consumption |
 | `solar_to_house_kw` | Aurinkopaneeleilta kiinteistölle | Solar power used directly by the house |

@@ -146,6 +146,8 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                     "solar_power_kw", 
                     "solar_array_1_power_kw",
                     "solar_array_2_power_kw",
+                    "solar_array_3_power_kw",
+                    "solar_array_4_power_kw",
                     "grid_power_kw",
                     "house_power_kw",
                     "solar_to_house_kw",
