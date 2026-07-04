@@ -399,7 +399,7 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
     async def get_spot_price_margin(self, entry):
         add_margin = get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ADD_SPOT_PRICE_MARGIN, DEFAULT_ADD_SPOT_PRICE_MARGIN)
         if add_margin:            
-            return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_ELECTRICITY_TAX, DEFAULT_ELECTRICITY_TAX)
+            return get_config_parameter(entry, SECTION_CURRENCY_SETTINGS, CONF_SPOT_PRICE_MARGIN, DEFAULT_SPOT_PRICE_MARGIN)
         
         return 0.0
         
