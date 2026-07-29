@@ -257,7 +257,7 @@
       "total_savings_eur": { "name": "Cumulative profit" },
       "battery_cycle_count": { 
         "name": "Battery charging cycles",
-        "unit_of_measurement": "sykliä"
+        "unit_of_measurement": "cycles"
       },
       "battery_state": { 
         "name": "Battery state",
