@@ -276,6 +276,45 @@ async def test_coordinator_combined_savings_calculation(hass, mock_config_entry)
 
         assert data["net_savings_rate"] == pytest.approx(expected)
         
+async def test_coordinator_opportunity_cost_solar_to_battery(hass, mock_config_entry):
+    """Test opportunity cost is applied when solar energy charges battery instead of being exported."""
+
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        version=1,
+    )
+
+    coordinator = KotiakkuDataUpdateCoordinator(hass, mock_config_entry)
+
+    coordinator.get_transfer_fee = AsyncMock(return_value=0)
+
+    payload = [{
+        "state_of_charge_percent": 60,
+        "battery_power_kw": -2.0,  # charging
+        "solar_to_house_kw": 0.0,
+        "battery_to_house_kw": 0.0,
+        "solar_to_grid_kw": 0.0,
+        "battery_to_grid_kw": 0.0,
+        "solar_to_battery_kw": 2.0,  # solar charging battery
+        "grid_to_battery_kw": 0.0,
+        "spot_price_cents_per_kwh": 10.0
+    }]
+
+    with aioresponses() as m:
+        m.get(re.compile(r".*"), status=200, payload=payload)
+
+        data = await coordinator._async_update_data()
+
+        # price = 10 cents = 0.10 €
+        # sell_rate = 0.10 (no export fee)
+        # solar_to_battery = 2 kW -> opportunity cost = 2 * 0.10 = 0.20
+        # No solar_to_house, no battery_to_house, no export
+        # charging_cost = 2 * 0.10 = 0.20
+        # net_savings_rate = 0 + 0 + 0 - 0.20 = -0.20
+
+        assert data["net_savings_rate"] == pytest.approx(-0.20)
+
 async def test_coordinator_export_fee_reduces_income(hass, mock_config_entry):
     """Test export transfer fee reduces export income."""
 

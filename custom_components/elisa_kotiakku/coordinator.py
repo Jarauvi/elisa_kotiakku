@@ -250,7 +250,7 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                     
                     sell_rate = price_eur_kwh + spot_price_margin - export_fee
                     export_income = (data.get("solar_to_grid_kw", 0) + data.get("battery_to_grid_kw", 0)) * sell_rate
-                    charging_cost = data.get("grid_to_battery_kw", 0) * buy_rate
+                    charging_cost = data.get("grid_to_battery_kw", 0) * buy_rate + data.get("solar_to_battery_kw", 0) * sell_rate
                     
                     data["net_savings_rate"] = solar_savings + battery_savings + export_income - charging_cost
                     data["total_price_cents_per_kwh"] = (price_eur_kwh + spot_price_margin + transfer_fee_eur_kwh) * 100 * vat_mult
@@ -279,8 +279,8 @@ class KotiakkuDataUpdateCoordinator(DataUpdateCoordinator):
                         
                         if total_in > 0:
                             # Calculate the weighted price of the new energy being added
-                            # Solar is 0 cents, grid is buy_rate * 100
-                            new_energy_price = ( (solar_in * 0) + (grid_in * buy_rate * 100) ) / total_in
+                            # Solar is sell_rate * 100 (opportunity cost of not exporting), grid is buy_rate * 100
+                            new_energy_price = ( (solar_in * sell_rate * 100) + (grid_in * buy_rate * 100) ) / total_in
                             
                             # Update the total stored average price
                             prev_energy_kwh = (self.last_soc / 100.0) * battery_capacity
