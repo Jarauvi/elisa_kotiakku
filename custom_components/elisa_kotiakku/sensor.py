@@ -5,10 +5,10 @@ from datetime import timedelta
 from homeassistant.util import dt as dt_util
 from homeassistant.components.sensor import (
     SensorEntity,
-    RestoreEntity,
     SensorDeviceClass,
     SensorStateClass,
 )
+from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
