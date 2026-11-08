@@ -5,7 +5,6 @@ from datetime import timedelta
 from homeassistant.util import dt as dt_util
 from homeassistant.components.sensor import (
     SensorEntity,
-    RestoreEntity,
     SensorDeviceClass,
     SensorStateClass,
 )
@@ -16,10 +15,11 @@ from homeassistant.const import (
     PERCENTAGE,
 )
 
+from homeassistant.helpers.restore_state import RestoreEntity
+
 from homeassistant.helpers import entity_registry as er
 from homeassistant.components.recorder import get_instance
 from homeassistant.components.recorder import history
-from homeassistant.helpers import entity_registry as er
 from homeassistant.const import UnitOfTime
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
